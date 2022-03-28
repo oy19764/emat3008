@@ -1,9 +1,12 @@
+import math
+import numpy as np
+import matplotlib.pyplot as plt
 """ initial conditions """
 x0 = 1
 t0 = 0
-h = 0.07
+h = 0.003
 deltat_max = 1
-odearray = [0, 0.5, 1, 1.5, 2]
+odearray = [1]
 
 
 
@@ -61,16 +64,49 @@ def solve_ode(odearray, x0):
         x = solve_to(t0, t1, x, h, deltat_max)
         sol_array.append(x)
         
+    return x, sol_array
+
+
+def plot_error():
+    t0 = 0
+    t1 = 1
+    x0 = 1
+
+    true_x = math.exp(1)
+    h = np.linspace(0.0000001, 1, num = 100000)
+    err_array = []
+
+    for i in h:
+        x = solve_to(t0, t1, x0, i, deltat_max)
+        #print(x, true_x)
+        error = abs((true_x - x))
+        #print(error)
+        err_array.append(error)
+
+    y_axis = np.log10(err_array)
+    x_axis = np.log10(list(h))
+
+    plt.plot(x_axis, y_axis, color='red', linewidth=0.5)
+    plt.ylabel('Error')
+    plt.xlabel('Step Size')
+    plt.show()
+
+    
+
+        
+
     
 
     
-    return x, sol_array
+    
+
 
 if __name__ == '__main__':
 
-    x, a = solve_ode(odearray, x0)
+    #x, a = solve_ode(odearray, x0)
 
-    print(x)
-    print(a)
+    #print(x)
+    #print(a)
+    plot_error()
 
 
