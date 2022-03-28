@@ -1,8 +1,9 @@
 """ initial conditions """
 x0 = 1
 t0 = 0
-h = 0.25
+h = 0.07
 deltat_max = 1
+odearray = [0, 0.5, 1, 1.5, 2]
 
 
 
@@ -18,13 +19,13 @@ def euler_step(x, t, h):
 
 
 
-def solve_to(t0, x0, h, deltat_max):
+def solve_to(t0, t1, x0, h, deltat_max):
     """ loop through the euler function between t1 and t2"""
     t = t0
     x = f(x0, t0)
     f_array = []
     f_array.append(x)
-    space = 1
+    space = t1-t
     if h > deltat_max:
         return print(' step value too high')
     else:
@@ -43,16 +44,31 @@ def solve_to(t0, x0, h, deltat_max):
 
             
 
-    return x, f_array
+    return x
 
 
 
-def solve_ode():
-    return
+def solve_ode(odearray, x0):
+    t = odearray[0]
+    sol_array = []
+    x = f(x0, 1)
+    sol_array.append(x)
+
+    for i in range(len(odearray)-1):
+        #if i != odearray[-1]:
+        t0 = odearray[i]
+        t1 = odearray[i+1]
+        x = solve_to(t0, t1, x, h, deltat_max)
+        sol_array.append(x)
+        
+    
+
+    
+    return x, sol_array
 
 if __name__ == '__main__':
 
-    x, a = solve_to(t0, x0, h, deltat_max)
+    x, a = solve_ode(odearray, x0)
 
     print(x)
     print(a)
