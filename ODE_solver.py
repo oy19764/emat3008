@@ -4,20 +4,56 @@ import matplotlib.pyplot as plt
 """ initial conditions """
 x0 = 1
 t0 = 0
-h = 0.25
+h = 0.000125
 deltat_max = 1
-odearray = [0, 1, 2]
+odearray = np.linspace(0,5,50)
+
+'initial vector conditions'
+x0 = 0
+a0 = 1
+X0 = [x0, a0]
 
 
 
+"""
 def f(t, x):
+    
     return x
+"""
+
+
+"""
+x'' = -x
+equivalent to:
+x' = a
+a' = -x
+treating as a vector:
+(x, a)' = (a, -x)
+make function that can compute the rhs of the vector:
+X' = f(X, t)
+"""
+
+
+def f(t, X):
+    #print(X)
+    #print(type(X))
+    x = X[0]
+    a = X[1]
+    dxdt = a
+    dadt = -x
+    dXdt = [dxdt, dadt]
+    
+    return np.array(dXdt)
 
 
 
-def euler_step(t, x, h):
+
+
+
+
+def euler_step(t, X0, h):
     """ make a single Euler step """
-    x = x + h*f(t, x)
+    x = X0 + h*f(t, X0)
     t = t + h
     return x, t
 
@@ -95,18 +131,18 @@ def solve_to_rk4(t0, t1, x0, h, deltat_max):
 
 
 def solve_ode(odearray, x0):
-
-    method = input("Would you like to use the Euler of Rk4 method? type in 'E' for Euler or 'R' for RK4 " )
-    euler = bool
-    if method == 'E':
-        euler = True
-    elif method == 'R':
-        euler = False
+    euler = True
+    #method = input("Would you like to use the Euler of Rk4 method? type in 'E' for Euler or 'R' for RK4 " )
+    #euler = bool
+    #if method == 'E':
+    #    euler = True
+    #elif method == 'R':
+    #    euler = False
     
     t = odearray[0]
     sol_array = []
 
-    x = f(x0, 1)
+    x = np.array(f(1, x0))
     sol_array.append(x)
 
     for i in range(len(odearray)-1):
@@ -120,7 +156,7 @@ def solve_ode(odearray, x0):
             x = solve_to_rk4(t0, t1, x, h, deltat_max)
         sol_array.append(x)
         
-    return x, sol_array
+    return x
 
 
 def plot_error():
@@ -170,12 +206,10 @@ def plot_error():
 
 
 if __name__ == '__main__':
-
-    #x, a = solve_ode(odearray, x0)
+    x = solve_ode(odearray, X0)
     #x = rk4_step(1, 0, 0.5)
 
-    #print(x)
-    #print(a)
-    plot_error()
+    print(x)
+    #plot_error()
 
 
