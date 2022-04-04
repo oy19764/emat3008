@@ -7,7 +7,7 @@ X0 = [1]
 t0 = 0
 h = 0.00011
 deltat_max = 1
-t = np.linspace(0,5,21)
+t = np.linspace(0,2,3)
 
 'initial vector conditions'
 #x0 = 0
@@ -60,7 +60,7 @@ def euler_step(f, t, X0, h):
 
 
 
-def solve_to(f, method, t0, t1, x0, h, deltat_max):
+def solve_to(f, method, t0, t1, h, x0, deltat_max):
     """ loop through the euler function between t1 and t2"""
     t = t0
     x = f(t0, x0)
@@ -86,6 +86,7 @@ def solve_to(f, method, t0, t1, x0, h, deltat_max):
 
 
 def rk4_step(f, t, x, h):
+    """ make a single rk4 step """
     k1 = np.array(f(t, x))
     k2 = np.array(f((t+h/2), (x+h*k1/2)))
     k3 = np.array(f((t+h/2), (x+h*k2/2)))
@@ -97,7 +98,7 @@ def rk4_step(f, t, x, h):
 
     
 
-def solve_ode(f, method ,t , x0, deltat_max):
+def solve_ode(f, method ,t , x0, h, deltat_max):
     
     t0 = t[0]
     sol_array = np.zeros((len(t), len(x0)))
@@ -108,7 +109,8 @@ def solve_ode(f, method ,t , x0, deltat_max):
         
         t0 = t[i-1]
         t1 = t[i]
-        sol_array[i] = solve_to(f, method, t0, t1, sol_array[i-1], h, deltat_max)
+        sol_array[i] = solve_to(f, method, t0, t1, h, sol_array[i-1], deltat_max)
+                    #  solve_to(f, method, t0, t1, h, x0, deltat_max)
         
     return sol_array
 
@@ -172,7 +174,7 @@ def plot_system(f, t, x0):
 
 
 if __name__ == '__main__':
-    x = solve_ode(f, rk4_step, t, X0, deltat_max)
+    x = solve_ode(f, rk4_step, t, X0, h, deltat_max)
     #x = rk4_step(1, [0, 1], 0.5)
 
     print(x)
