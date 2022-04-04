@@ -56,7 +56,16 @@ X0 = [x0, a0]
 h = 0.0001
 t = np.linspace(0,math.pi,500)
 
-
+"""
+x'' = -x
+equivalent to:
+x' = a
+a' = -x
+treating as a vector:
+(x, a)' = (a, -x)
+make function that can compute the rhs of the vector:
+X' = f(X, t)
+"""
 
 # d2x/dt2 = -x #
 def f(t, X):
