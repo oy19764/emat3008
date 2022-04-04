@@ -1,25 +1,26 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.integrate import odeint
 """ initial conditions """
-x0 = 1
+X0 = [1]
 t0 = 0
-h = 0.000125
+h = 0.00011
 deltat_max = 1
-odearray = np.linspace(0,5,50)
+t = np.linspace(0,5,21)
 
 'initial vector conditions'
-x0 = 0
-a0 = 1
-X0 = [x0, a0]
+#x0 = 0
+#a0 = 1
+#X0 = [x0, a0]
 
 
 
-"""
+
 def f(t, x):
     
     return x
-"""
+
 
 
 """
@@ -33,7 +34,7 @@ make function that can compute the rhs of the vector:
 X' = f(X, t)
 """
 
-
+"""
 def f(t, X):
     #print(X)
     #print(type(X))
@@ -43,23 +44,23 @@ def f(t, X):
     dadt = -x
     dXdt = [dxdt, dadt]
     
-    return np.array(dXdt)
+    return dXdt
+"""
 
 
 
 
 
 
-
-def euler_step(t, X0, h):
+def euler_step(f, t, X0, h):
     """ make a single Euler step """
-    x = X0 + h*f(t, X0)
+    x = X0 + h*np.array(f(t, X0))
     t = t + h
     return x, t
 
 
 
-def solve_to(t0, t1, x0, h, deltat_max):
+def solve_to(f, method, t0, t1, x0, h, deltat_max):
     """ loop through the euler function between t1 and t2"""
     t = t0
     x = f(t0, x0)
@@ -73,90 +74,43 @@ def solve_to(t0, t1, x0, h, deltat_max):
         repeats = (space - remainder)/h
 
         for i in range(int(repeats)):
-            x, t = euler_step(t, x, h)
+            x, t = method(f, t, x, h)
             f_array.append(x)
 
         if remainder != 0:
-            x, t = euler_step(t, x, remainder)
+            x, t = method(f, t, x, remainder)
             f_array.append(x)
 
     return x
 
-"""
-def rk4_step(x, t, h):
-    k1 = h * (f(x, t))
-    k2 = h * (f((x+h/2), (t+k1/2)))
-    k3 = h * (f((x+h/2), (t+k2/2)))
-    k4 = h * (f((x+h), (t+k3)))
-    k = x + (k1+2*k2+2*k3+k4)/6
-    return k
-"""
-def rk4_step(t, x, h):
-    k1 = (f(t, x))
-    k2 = (f((t+h/2), (x+h*k1/2)))
-    k3 = (f((t+h/2), (x+h*k2/2)))
-    k4 = (f((t+h), (x+h*k3)))
+
+
+def rk4_step(f, t, x, h):
+    k1 = np.array(f(t, x))
+    k2 = np.array(f((t+h/2), (x+h*k1/2)))
+    k3 = np.array(f((t+h/2), (x+h*k2/2)))
+    k4 = np.array(f((t+h), (x+h*k3)))
     k = x + h*(k1+2*k2+2*k3+k4)/6
     t = t + h
     return k, t
 
 
-
-
-
-def solve_to_rk4(t0, t1, x0, h, deltat_max):
-    """ loop through the euler function between t1 and t2"""
-    t = t0
-    x = f(t0, x0)
-    f_array = []
-    f_array.append(x)
-    space = t1-t
-    if h > deltat_max:
-        return print(' step value too high')
-    else:
-        remainder = space%h
-        repeats = (space - remainder)/h
-
-        for i in range(int(repeats)):
-            x, t = rk4_step(t, x, h)
-            f_array.append(x)
-
-        if remainder != 0:
-            x, t = rk4_step(t, x, remainder)
-            f_array.append(x)
-
-    return x
-
     
 
-
-def solve_ode(odearray, x0):
-    euler = True
-    #method = input("Would you like to use the Euler of Rk4 method? type in 'E' for Euler or 'R' for RK4 " )
-    #euler = bool
-    #if method == 'E':
-    #    euler = True
-    #elif method == 'R':
-    #    euler = False
+def solve_ode(f, method ,t , x0, deltat_max):
     
-    t = odearray[0]
-    sol_array = []
+    t0 = t[0]
+    sol_array = np.zeros((len(t), len(x0)))
 
-    x = np.array(f(1, x0))
-    sol_array.append(x)
+    sol_array[0]= x0
 
-    for i in range(len(odearray)-1):
-        #if i != odearray[-1]:
-        t0 = odearray[i]
-        t1 = odearray[i+1]
-        if euler == True:
-            x = solve_to(t0, t1, x, h, deltat_max)
-            #print(t1)
-        if euler == False:
-            x = solve_to_rk4(t0, t1, x, h, deltat_max)
-        sol_array.append(x)
+    for i in range(1, len(t)):
         
-    return x
+        t0 = t[i-1]
+        t1 = t[i]
+        sol_array[i] = solve_to(f, method, t0, t1, sol_array[i-1], h, deltat_max)
+        
+    return sol_array
 
 
 def plot_error():
@@ -197,7 +151,19 @@ def plot_error():
 
     
 
+
+def plot_system(f, t, x0):
+    
+    X = solve_ode(f, t, x0)
+    print(X)
+    for i in range(len(t)-1):
+        points = X[:,i]
+        plt.plot(t, points)
+    plt.show()
+
         
+    
+    return
 
     
 
@@ -206,10 +172,11 @@ def plot_error():
 
 
 if __name__ == '__main__':
-    x = solve_ode(odearray, X0)
-    #x = rk4_step(1, 0, 0.5)
+    x = solve_ode(f, rk4_step, t, X0, deltat_max)
+    #x = rk4_step(1, [0, 1], 0.5)
 
     print(x)
     #plot_error()
+    #plot_system(f, rk4_step, t, X0, deltat_max)
 
 
