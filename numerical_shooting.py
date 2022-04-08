@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import ODE_solver as os
 from scipy.integrate import odeint
+from scipy.optimize import fsolve
 
 ## Exercise 1  ##
 
@@ -29,11 +30,16 @@ sol = os.solve_ode(f, os.rk4_step, t, x0, h)
 #sol = odeint(fpred, v0, t, args=(a,b,d))
 #print(a)
 
-
 # plot time series
 
 x = sol[:,0]
 y = sol[:,1]
 
-plt.plot(t, x, y)
-plt.show()
+#plt.plot(t, x, y)
+#plt.show()
+
+"""
+    The populations flattens out when b>0.26, and it will continue
+continue oscillating if b<0.26
+"""
+
