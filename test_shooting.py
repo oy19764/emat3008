@@ -38,7 +38,7 @@ y = sol[:,1]
 
 plt.plot(t, x)
 plt.plot(t, y)
-plt.show()
+#plt.show()
 
 """
     The populations flattens out when b>0.26, and it will continue
