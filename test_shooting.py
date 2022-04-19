@@ -72,37 +72,41 @@ of y against x shows the development of a circle, indication the formation of pe
 ## Isolate a periodic orbit ##
 def find_orbit(f, t, x, y, h, a, b, d):
     period_list = []
+    intersect = []
     for i in range(len(t)):
         if y[i] >= 0.37:
             if abs(x[i] - y[i]) <= 0.001:
                 period_list.append(t[i])
+                intersect.append(np.array([x[i],y[i]]))
 
-
-    print(period_list)
+    #orbit_limit = [period_list[-2], period_list[-1]]
     orbit_limit = np.array([period_list[-2], period_list[-1]])
     period = period_list[-1] - period_list[-2]
-    print(period)
     print(orbit_limit)
 
+    start = intersect[-2]
+   
     t_orb = np.linspace(period_list[-2],period_list[-1],200)
-    orbitsol = os.solve_ode(f, os.rk4_step, t_orb, [orbit_limit,orbit_limit], h, a, b, d)
+    orbitsol = os.solve_ode(f, os.rk4_step, t_orb, start, h, a, b, d)
 
     orbit_x = orbitsol[:,0]
     orbit_y = orbitsol[:,1]
-
-    plt.plot(orbit_x, orbit_y, 'g', label='orbit found')
+    
     plt.plot(x, y)
+    plt.plot(orbit_x, orbit_y, label='Orbit isolated')
     plt.ylabel('y')
     plt.xlabel('x')
+    plt.legend()
     plt.show()    
 
-    return np.array([orbit_limit[0], orbit_limit[0]]), period
-
+    return period
 
 
 # isolated period orbit
-s_condition, period = find_orbit(f, t, x, y, h, a, b, d)
-# starting condition
+period = find_orbit(f, t, x, y, h, a, b, d)
+#period
+print('The period of the orbit is:  {}'.format(period))
+
 
 
 
