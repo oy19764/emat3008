@@ -123,80 +123,26 @@ def phase_condition(u0, *args):
         
         return f(u0, t, *args)[1]
 
-U0 = [orbit_x[0], orbit_y[0]]
-print(phase_condition(U0, a, b, d))
+def G(u0, *args):
+    t0 = 0
+    T = 24
+    #t = np.linspace(t0, int(t0+T), 3)
+    sol = os.solve_ode(f, os.rk4_step, [t0, T], u0, 0.001, *args)
+    print(sol[-1])
+    return u0 - sol[-1]
+
+
+T = period # period estimate
+U0 = [0.3, 0.25] # start conditions estimate
+#print(phase_condition(U0, a, b, d))
+#print(G(U0, 0, T, a, b, d))
+#a = fsolve(G, [0.3, 0.32], args=(a,b,d))
+#print(a)
 
 
 
+def C(u0, T, *args):
+    a = fsolve(lambda U : G(U, *args), np.concatenate((u0, [T])), f)
+    return print(a)
 
-
-
-
-#results: x = 0.14973664465794942  y = 0.15001583632703638 t = 51.300000000000004
-# initial conditions:
-u0 = [0.35, 0.35]     # using same known initial conitions
-# hence boundary conditions : x(0) = x(T), y(0) = y(T)
-# f(x,y,T)=[x(0)]-x(T), y(0)]-y(T)] = 0
-# we need to add a phase condition:
-# f(x,y,T)=[x(0)]-x(T), y(0)]-y(T), dxdt(0)-p] = 0
-
-
-
-T = 21     # estimate of the time period
-t0 = 0 #np.linspace(t0,100,1001)
-
-
-
-
-
-
-
-"""
-G = lambda U: [
-    U[:-1] - os.solve_ode(f, os.rk4_step, [0, U[:-1]], U[-1], 0.001),
-    f(U[-1], U[:-1])
-]
-a = fsolve(G, 20)
-"""
-
-
-
-
-
-
-
-"""
-G = lambda U: [
-    *(U[:-1] - os.solve_ode(f, os.rk4_step, [0, U[-1]], U[-1], 0.001, *args)[-1]),
-    f(U[-1], U[:-1], *args)[0],
-]
-print(G)
-
-
-def G(f, U, *args):
-    print(U)
-
-    u0 = U[:-1]
-    T = U[-1]
-
-    sol = os.solve_ode(f, os.rk4_step, [0, T], u0, 0.001, *args)
-
-    gamma = f(u0, 0, *args)[1] #phase condition
-
-    a = u0 - sol
-
-    return np.array(a, gamma)
-
-
-def solve_system(f, u0, T, *args):
-
-    sol = fsolve(lambda U, f: G(f, U, *args), np.concatenate((u0, T)), f)
-
-    return sol
-
-sol2, gamma = G(f, u0, t0, T)
-
-#print(gamma)
-#print(sol2)
-
-"""
+print(C(U0, T, a, b, d))    
