@@ -56,10 +56,10 @@ plt.plot(t, x)
 plt.plot(t, y)
 plt.show()
 # plot y against x
-plt.plot(x, y)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.show()
+#plt.plot(x, y)
+#plt.ylabel('y')
+#plt.xlabel('x')
+#plt.show()
 
 """
     The figures show different outcomes for the predator-prey equations depending on the value of b.
@@ -70,7 +70,7 @@ of y against x shows the development of a circle, indication the formation of pe
 """
 
 ## Isolate a periodic orbit ##
-def find_orbit(f, t, x, y, h, a, b, d):
+def find_orbit(f, t, x, y, h, *args):
     period_list = []
     intersect = []
     for i in range(len(t)):
@@ -87,7 +87,7 @@ def find_orbit(f, t, x, y, h, a, b, d):
     start = intersect[-2]
    
     t_orb = np.linspace(period_list[-2],period_list[-1],200)
-    orbitsol = os.solve_ode(f, os.rk4_step, t_orb, start, h, a, b, d)
+    orbitsol = os.solve_ode(f, os.rk4_step, t_orb, start, h, *args)
 
     orbit_x = orbitsol[:,0]
     orbit_y = orbitsol[:,1]
@@ -99,11 +99,13 @@ def find_orbit(f, t, x, y, h, a, b, d):
     plt.legend()
     plt.show()    
 
-    return period
+    return period, orbit_x, orbit_y
+
+
 
 
 # isolated period orbit
-period = find_orbit(f, t, x, y, h, a, b, d)
+period, orbit_x, orbit_y = find_orbit(f, t, x, y, h, a, b, d)
 #period
 print('The period of the orbit is:  {}'.format(period))
 
@@ -117,7 +119,12 @@ print('The period of the orbit is:  {}'.format(period))
 ## Exercise 3  ##
 
 
+def phase_condition(u0, *args):
+        
+        return f(u0, t, *args)[1]
 
+U0 = [orbit_x[0], orbit_y[0]]
+print(phase_condition(U0, a, b, d))
 
 
 
