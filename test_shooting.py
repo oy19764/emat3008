@@ -109,6 +109,15 @@ print('The period of the orbit is:  {}'.format(period))
 
 
 
+## Exercise 2  ##
+
+# An appropriate phase condition would be to use either derivative of x or y at time 0
+# dxdt(0) or dydt(0) can be used.
+
+## Exercise 3  ##
+
+
+
 
 
 
