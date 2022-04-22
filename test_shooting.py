@@ -83,6 +83,7 @@ def find_orbit(f, t, x, y, h, *args):
     orbit_limit = np.array([period_list[-2], period_list[-1]])
     period = period_list[-1] - period_list[-2]
     print(orbit_limit)
+    print(period_list)
 
     start = intersect[-2]
    
@@ -92,12 +93,12 @@ def find_orbit(f, t, x, y, h, *args):
     orbit_x = orbitsol[:,0]
     orbit_y = orbitsol[:,1]
     
-    plt.plot(x, y)
-    plt.plot(orbit_x, orbit_y, label='Orbit isolated')
-    plt.ylabel('y')
-    plt.xlabel('x')
-    plt.legend()
-    plt.show()    
+    #plt.plot(x, y)
+    #plt.plot(orbit_x, orbit_y, label='Orbit isolated')
+    #plt.ylabel('y')
+    #plt.xlabel('x')
+    #plt.legend()
+    #plt.show()    
 
     return period, orbit_x, orbit_y
 
@@ -119,21 +120,8 @@ print('The period of the orbit is:  {}'.format(period))
 ## Exercise 3  ##
 
 
-def phase_condition(u0, *args):
-        
-        return f(u0, t, *args)[1]
-
-def G(u0, *args):
-    t0 = 0
-    T = 24
-    #t = np.linspace(t0, int(t0+T), 3)
-    sol = os.solve_ode(f, os.rk4_step, [t0, T], u0, 0.001, *args)
-    print(sol[-1])
-    return u0 - sol[-1]
-
-
-T = period # period estimate
-U0 = [0.3, 0.25] # start conditions estimate
+T = 22 # period estimate
+U0 = [0.4, 0.4] # start conditions estimate
 #print(phase_condition(U0, a, b, d))
 #print(G(U0, 0, T, a, b, d))
 #a = fsolve(G, [0.3, 0.32], args=(a,b,d))
@@ -141,8 +129,41 @@ U0 = [0.3, 0.25] # start conditions estimate
 
 
 
-def C(u0, T, *args):
-    a = fsolve(lambda U : G(U, *args), np.concatenate((u0, [T])), f)
-    return print(a)
+def orbit(u0, T, *args):
 
-print(C(U0, T, a, b, d))    
+    
+    def shoot(U, *args):
+
+        def G(u0, T, *args):
+
+            sol = os.solve_ode(f, os.rk4_step, [0, T], u0, 0.001, *args)
+            g1 = u0 - sol[-1]
+            g2 = f(u0, t, *args)[1] # phase condition
+            gsol = np.append(g1, g2)
+            return gsol
+
+
+        u0 = U[:-1]
+        T = U[-1]
+        shot = G(u0, T, *args)
+
+        return shot
+
+
+    sol = fsolve(lambda U: shoot(U, *args), np.concatenate((u0, [T])))
+    u0 = sol[:-1]
+    T = sol[-1]
+    return u0, T
+
+
+u0, T = orbit(U0, T, a, b, d)
+
+sol_orbit = os.solve_ode(f,  os.rk4_step, np.linspace(0, T, 200), u0, 0.001, a, b, d)
+
+plt.plot(sol_orbit[:,0], sol_orbit[:,1], label='Orbit isolated')
+plt.ylabel('y')
+plt.xlabel('x')
+plt.legend()
+plt.show()    
+
+
