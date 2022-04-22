@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import ODE_solver as os
-from scipy.integrate import odeint
 from scipy.optimize import fsolve
 
 ## Exercise 1  ##
@@ -155,7 +154,7 @@ def orbit(u0, T, *args):
     T = sol[-1]
     return u0, T
 
-
+"""
 u0, T = orbit(U0, T, a, b, d)
 
 sol_orbit = os.solve_ode(f,  os.rk4_step, np.linspace(0, T, 200), u0, 0.001, a, b, d)
@@ -165,5 +164,8 @@ plt.ylabel('y')
 plt.xlabel('x')
 plt.legend()
 plt.show()    
+"""
+import shooting
 
+print(shooting.limit_cycle(f, U0, T, a, b, d))
 
