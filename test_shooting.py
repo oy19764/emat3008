@@ -7,10 +7,6 @@ from scipy.optimize import fsolve
 
 def f(X, t, a, b, d):
 
-    #a = args[0]
-    #b = args[1]
-    #d = args[2]
-
     x = X[0]
     y = X[1]
     #x, y = X
