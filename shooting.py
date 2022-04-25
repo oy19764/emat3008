@@ -4,7 +4,6 @@ from scipy.optimize import fsolve
 
 
 
-
 def G(ODE, u0, T, *args):
     """
     Returns the difference between the initial conditions and the solution to the ODE,
@@ -18,7 +17,7 @@ def G(ODE, u0, T, *args):
 
     sol = os.solve_ode(ODE, os.rk4_step, [0, T], u0, 0.001, *args)
     g1 = u0 - sol[-1]
-    g2 = ODE(u0, 0,*args)[1] # phase condition
+    g2 = ODE(u0, 0,*args)[0] # phase condition
     gsol = np.append(g1, g2)
     return gsol
 
@@ -35,7 +34,7 @@ def shoot(ODE, U, *args):
 def limit_cycle(ODE ,u0, T, *args):
     """
     Solves the shooting problem to find the roots to G, hence u0 ant T which are
-    are the conditions to make a limit cycle
+    the conditions to make a limit cycle
         Parameters:
                 ODE (function):         The ODE of which the limit cycle is to be found
                 u0 (tuple):             The estimated initial conditions of the ODE limit cycle
