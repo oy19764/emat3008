@@ -1,6 +1,4 @@
-import math
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 
 
@@ -60,13 +58,13 @@ def solve_ode(f, method ,t , x0, h, *args):
     sol_array = np.zeros((len(t), len(x0)))
 
     sol_array[0]= x0
-
+    
     for i in range(1, len(t)):
         
         t0 = t[i-1]
         t1 = t[i]
         sol_array[i] = solve_to(f, method, t0, t1, h, sol_array[i-1], deltat_max, *args)
-        
+                
     return sol_array
 
 
