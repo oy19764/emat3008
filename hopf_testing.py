@@ -41,7 +41,7 @@ def hopf_3d(u,t, beta, sigma = -1.0):
 
 
 
-def true_hopf_3d(t, beta, theta = 0.0):
+def true_hopf_3d(t, beta, theta =  0.0):
 
     u1 = np.sqrt(beta) * np.cos(t + theta)
     u2 = np.sqrt(beta) * np.sin(t + theta)
@@ -49,32 +49,17 @@ def true_hopf_3d(t, beta, theta = 0.0):
 
     return np.array((u1, u2, u3))
 
+t = np.linspace(0,10,101)
+sol = os.solve_ode(hopf, os.rk4_step, t, (1.4,0), 0.001, 2)
+u1 = sol[:,0]
+u2= sol[:,1]
+plt.plot(t,u1)
+plt.plot(t,u2)
+plt.show()
+
+
    
-# 3d testing 
-# find limit cycle using shooting function
-u0_3d, T_3d = shooting.limit_cycle(hopf_3d, (-1,0,1), 5, 1.0)
-#print(u0_3d)
-#print(T_3d)
-# use limit cycle to get solution to hopf over the cycle
-t_3d = np.linspace(0,T_3d,51)
-sol_3d = os.solve_ode(hopf_3d, os.rk4_step, t_3d, u0_3d, 0.001, 1.0)
-u1_3d = sol_3d[:,0]
-u2_3d = sol_3d[:,1]
-u3_3d = sol_3d[:,2]
-# get solution to the true hopf over the same t
-u1_true_3d, u2_true_3d, u3_true_3d = true_hopf_3d(t_3d, beta=1, theta=np.pi)
-#plot
-plt.plot(t_3d, u1_3d)
-plt.plot(t_3d, u2_3d)
-plt.plot(t_3d, u3_3d)
-plt.show()
-#t3d2 = np.linspace
-plt.plot(t_3d, u1_true_3d)
-plt.plot(t_3d, u2_true_3d)
-plt.plot(t_3d, u3_true_3d)
-plt.show()
-#print(u3_true_3d)
-#print(u3_3d)
+
 
 class Test_shooting(unittest.TestCase):
 
