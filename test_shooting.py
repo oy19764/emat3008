@@ -116,7 +116,7 @@ print('The period of the orbit is:  {}'.format(period))
 
 
 T = 22 # period estimate
-U0 = [0.4, 0.4] # start conditions estimate
+u0 = [0.4, 0.4] # start conditions estimate
 #print(phase_condition(U0, a, b, d))
 #print(G(U0, 0, T, a, b, d))
 #a = fsolve(G, [0.3, 0.32], args=(a,b,d))
@@ -163,5 +163,8 @@ plt.show()
 """
 import shooting
 
-print(shooting.limit_cycle(f, U0, T, a, b, d))
+U0 = (0.4, 0.4, 22)
+print(shooting.limit_cycle(f, U0, a, b, d))
+
+#a, b = shooting.limit_cycle(f, U0, a, b, d)
 
