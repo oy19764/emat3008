@@ -47,6 +47,6 @@ def limit_cycle(ODE ,U0, *args):
                 T (float):              Time period of the limit cycle
     """
     sol = fsolve(lambda U: shoot(ODE, U, *args), U0)
-    u0 = sol[:-1]
-    T = sol[-1]
-    return u0, T
+    #u0 = sol[:-1]
+    #T = sol[-1]
+    return sol             #u0, T
