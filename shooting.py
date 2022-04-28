@@ -31,21 +31,22 @@ def shoot(ODE, U, *args):
     return shot
 
 
-def limit_cycle(ODE ,u0, T, *args):
+
+
+def limit_cycle(ODE ,U0, *args):
     """
     Solves the shooting problem to find the roots to G, hence u0 ant T which are
     the conditions to make a limit cycle
         Parameters:
                 ODE (function):         The ODE of which the limit cycle is to be found
-                u0 (tuple):             The estimated initial conditions of the ODE limit cycle
-                T (float):              The estimate for the time period of the limit cycle
+                U0 (tuple):             The estimated initial conditions and time period of the ODE limit cycle
                 args:                   Any additional arguments required for the ODE
                 
         Returns:
                 u0 (tuple):             Initial conditions of the limit cycle
                 T (float):              Time period of the limit cycle
     """
-    sol = fsolve(lambda U: shoot(ODE, U, *args), np.concatenate((u0, [T])))
+    sol = fsolve(lambda U: shoot(ODE, U, *args), U0)
     u0 = sol[:-1]
     T = sol[-1]
     return u0, T
