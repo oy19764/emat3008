@@ -3,18 +3,36 @@ from scipy.integrate import odeint
 
 
 def euler_step(f, x0, t0, h, *args):
-    """ make a single Euler step """
-    #print('before step')
-    #print(x0)
+    """ 
+    Makes a single Euler step of step size h for the given function.
+        Parameters:
+            f(function):        ODE for which we are performing the Euler Step
+            x0(tuple):          x value at which we start the step
+            t0(float):          t value at which we start the step
+            h(float):           Step size
+            *args:              Any additional arguments required for the ODE
+        Returns:
+            x1:                 x values after performing the step
+            t1:                 t value after performing the step
+    """
     x1 = x0 + h*np.array(f(x0, t0, *args))
     t1 = t0 + h
-    #print('after step')
-    #print(x1)
     return x1, t1
 
 
 def rk4_step(f, x0, t0, h, *args):
-    """ make a single rk4 step """
+    """ 
+    Makes a single RK4 step of step size h for the given function.
+        Parameters:
+            f(function):        ODE for which we are performing the RK4 step
+            x0(tuple):          x value at which we start the step
+            t0(float):          t value at which we start the step
+            h(float):           Step size
+            *args:              Any additional arguments required for the ODE
+        Returns:
+            x1:                 x values after performing the step
+            t1:                 t value after performing the step
+    """
     k1 = np.array(f(x0, t0, *args))
     k2 = np.array(f((x0+h*k1/2), (t0+h/2), *args))
     k3 = np.array(f((x0+h*k2/2), (t0+h/2), *args))
@@ -25,11 +43,23 @@ def rk4_step(f, x0, t0, h, *args):
 
 
 def solve_to(f, method, t0, t1, h, x0, deltat_max, *args):
-    """ loop through the euler function between t1 and t2"""
+    """ 
+    Loop through the specified solver method between t0 and t1 
+    in steps no bigger than deltat_max.
+        Parameters:
+            f(function):        ODE function to solve
+            method(function):   Method to solve the ode with
+            t0(float):          initial t value at which we start solving
+            t1(float):          Time value to solve to
+            h(float):           Step size
+            x0(tuple):          Initial x value at which we start solving
+            deltat_max(float):  Maximum step size permitted
+            *args:              Any additional arguments required for the ODE
+        Returns:
+            x:                  x values at time t1
+    """
     t = t0
-    #x = f(x0, t0, *args)
     f_array = []
-    #f_array.append(x)
     space = t1-t
     x=x0
     if h > deltat_max:
@@ -46,12 +76,22 @@ def solve_to(f, method, t0, t1, h, x0, deltat_max, *args):
             x, t = method(f, x, t, remainder, *args)
             f_array.append(x)
 
-        
-
     return x
 
 
 def solve_ode(f, method ,t , x0, h, *args):
+    """ 
+    Solves the ode over the time period t.
+        Parameters:
+            f(function):        ODE function to solve
+            method(function):   Method to solve the ode with
+            t(ndarray):         t values to solve the ODE for
+            x0(tuple):          Initial known value of x
+            h(float):           Step size
+            *args:              Any additional arguments required for the ODE
+        Returns:
+            sol_array(ndarray): Solutions to the ODE for each time value in t
+    """
     deltat_max = 1
     
     t0 = t[0]
