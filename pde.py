@@ -9,10 +9,10 @@ import numpy as np
 import pylab as pl
 from math import pi
 from scipy.sparse import diags
+from scipy.sparse.linalg import spsolve
 
 
-
-def solve_pde(u_I, boundary,L, T, mt, mx, kappa):
+def solve_pde(u_I, boundary,L, T, mt, mx, kappa, method):
     """ 
     Makes a single Euler step of step size h for the given function.
         Parameters:
@@ -42,17 +42,39 @@ def solve_pde(u_I, boundary,L, T, mt, mx, kappa):
     # Set initial condition
     for i in range(0, mx+1):
         u_j[i] = u_I(x[i])
-
         
 
-    # Set tridiagonal matrix
-    diag = [[lmbda] * (mx-1), [1 - 2*lmbda] * mx , [lmbda] * (mx-1)]
+    # Set tridiagonal matrix 
+    # forward euler
+    if method == 'forward':
+        diag = [[lmbda] * (mx-1), [1 - 2*lmbda] * mx , [lmbda] * (mx-1)]
+    
+    #backwards euler
+    if method == 'backward':
+        diag = [[-lmbda] * (mx-1), [1 + 2*lmbda] * mx , [-lmbda] * (mx-1)]
+    
+    if method == 'crank':
+        diag = [[-lmbda/2] * (mx-1), [1 + lmbda] * mx , [-lmbda/2] * (mx-1)]
+        diag2 = [[lmbda/2] * (mx-1), [1 - lmbda] * mx , [lmbda/2] * (mx-1)]
+    
     tridiag = diags(diag, offsets = [-1,0,1], format = 'csc')
+    tridiag2 = diags(diag2, offsets = [-1,0,1], format = 'csc')
 
+    
 
     for i in range(0,mt):
         # forwad euler matrix calc
-        u_jp1[1:] = tridiag.dot(u_j[1:])
+        if method == 'forward':
+            u_jp1[1:] = tridiag.dot(u_j[1:])
+
+        # backwards euler matrix calc
+        if method == 'backward':
+            u_jp1[1:] = spsolve(tridiag, u_j[1:])
+
+        # crank-nicholson matrix calc
+        if method == 'crank':
+            u_jp1[1:] = spsolve(tridiag, tridiag2.dot(u_j[1:]))
+
         # boundary conditions
         u_jp1[0] = boundary(0, t[i])
         u_jp1[mx] = boundary(L, t[i])
@@ -89,11 +111,11 @@ def u_exact(x,t):
     return y
 
 # Set numerical parameters
-mx = 20     # number of gridpoints in space
+mx = 10     # number of gridpoints in space
 mt = 1000   # number of gridpoints in time
 
 
-x, u_j = solve_pde(u_I, heat_boundary, L, T, mt, mx, kappa)
+x, u_j = solve_pde(u_I, heat_boundary, L, T, mt, mx, kappa, method = 'crank')
 
 # Plot the final result and exact solution
 pl.plot(x,u_j,'ro',label='num')
