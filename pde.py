@@ -43,13 +43,24 @@ def solve_pde(u_I, boundary,L, T, mt, mx, kappa):
     for i in range(0, mx+1):
         u_j[i] = u_I(x[i])
 
+        
+
     # Set tridiagonal matrix
     diag = [[lmbda] * (mx-1), [1 - 2*lmbda] * mx , [lmbda] * (mx-1)]
     tridiag = diags(diag, offsets = [-1,0,1], format = 'csc')
 
 
     for i in range(0,mt):
+        # forwad euler matrix calc
         u_jp1[1:] = tridiag.dot(u_j[1:])
+        # boundary conditions
+        u_jp1[0] = boundary(0, t[i])
+        u_jp1[mx] = boundary(L, t[i])
+        #initialise u_j for the next time step
+        u_j[:] = u_jp1[:]
+
+    return x, u_j
+
 
 
 
@@ -78,42 +89,11 @@ def u_exact(x,t):
     return y
 
 # Set numerical parameters
-mx = 10     # number of gridpoints in space
+mx = 20     # number of gridpoints in space
 mt = 1000   # number of gridpoints in time
 
-# Set up matrix
-#M = np.zeros(mx,mt)
 
-# Set up the numerical environment variables
-x = np.linspace(0, L, mx+1)     # mesh points in space
-t = np.linspace(0, T, mt+1)     # mesh points in time
-deltax = x[1] - x[0]            # gridspacing in x
-deltat = t[1] - t[0]            # gridspacing in t
-lmbda = kappa*deltat/(deltax**2)    # mesh fourier number
-print("deltax=",deltax)
-print("deltat=",deltat)
-print("lambda=",lmbda)
-
-# Set up the solution variables
-u_j = np.zeros(x.size)        # u at current time step
-u_jp1 = np.zeros(x.size)      # u at next time step
-
-# Set initial condition
-for i in range(0, mx+1):
-    u_j[i] = u_I(x[i])
-
-# Solve the PDE: loop over all time points
-for j in range(0, mt):
-    # Forward Euler timestep at inner mesh points
-    # PDE discretised at position x[i], time t[j]
-    for i in range(1, mx):
-        u_jp1[i] = u_j[i] + lmbda*(u_j[i-1] - 2*u_j[i] + u_j[i+1])
-        
-    # Boundary conditions
-    u_jp1[0] = 0; u_jp1[mx] = 0
-        
-    # Save u_j at time t[j+1]
-    u_j[:] = u_jp1[:]
+x, u_j = solve_pde(u_I, heat_boundary, L, T, mt, mx, kappa)
 
 # Plot the final result and exact solution
 pl.plot(x,u_j,'ro',label='num')
