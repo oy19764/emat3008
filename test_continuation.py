@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import ODE_solver as os
 from scipy.optimize import fsolve
 from continuation import natural_parameters, pseudo_arclength
+from shooting import shoot
 
 def cubic(x, c):
 
@@ -12,9 +13,8 @@ cmax = 2
 cmin = -2
 delta_n = 0.001 # step size
 
-
-sol, alpha = natural_parameters(cubic, cmax, cmin, delta_n, 2, ODE = False)
-
+discretisation = lambda x: x
+sol, alpha = natural_parameters(cubic, cmax, cmin, delta_n, 2, discretisation, solver=fsolve)
 plt.plot(alpha, sol)
 plt.show()
 
@@ -31,22 +31,23 @@ def hopf(u, t, beta):
 
 cmin = 0
 cmax = 2
-delta_n = 0.1 # step size
+delta_n = 0.01 # step size
 
-sol, alpha = natural_parameters(hopf, cmax, cmin, delta_n, (1.4, 0, 6.3), ODE=True)
+discretisation = shoot
+sol, alpha = natural_parameters(hopf, cmax, cmin, delta_n, (1.2, 1.2, 6.3), discretisation, solver=fsolve, pc=1)
 print(sol)
 
-#u1 = [sol[0][0]]
-#u2 = [sol[0][1]]
+u1 = [sol[0][0]]
+u2 = [sol[0][1]]
 #T = [sol[0][2]]
-#for i in range(1,len(alpha)):
-#    u1.append(sol[i][0])
-#    u2.append(sol[i][1])
+for i in range(1,len(alpha)):
+    u1.append(sol[i][0])
+    u2.append(sol[i][1])
 #    T.append(sol[i][2])
 
-#plt.plot(alpha, u1)
-#plt.plot(alpha, u2)
-#plt.show()
+plt.plot(alpha, u1)
+plt.plot(alpha, u2)
+plt.show()
 
 def true_hopf(t, beta, theta = 0.0):
 
