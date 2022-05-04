@@ -2,7 +2,7 @@ import ODE_solver as os
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-
+from timeit import default_timer as timer
 
     ### Exercise 1 ###
 
@@ -42,10 +42,42 @@ def plot_error(f, t, h, x0, true_x, deltat_max):
     plt.xlabel('Step Size')
     plt.title('Error plot for the rk4 and euler method for increasing step size')
     plt.legend()
+    #plt.show()
+
+    # find step sizes for same error
+    err_euler = np.round(err_euler,4)
+    err_rk4 = np.round(err_rk4,4)
+    intersect, euler_i, rk4_i = np.intersect1d(err_euler, err_rk4, return_indices=True)
+    euler_intercept = np.round(h[euler_i],5)
+    rk4_intercept = np.round(h[rk4_i],5)
+    #plot step sizes for same error on the same plot
+    plt.plot(euler_intercept[1], intersect[1], marker='o', color='y', label=f' Euler step size = {euler_intercept[1]}')
+    plt.plot(rk4_intercept[1], intersect[1], marker='o', color='g', label=f' rk4 step size = {rk4_intercept[1]}')
+    plt.axhline(y=intersect[1], color='k', ls='-', label=f'Error = {intersect[1]}')
+    plt.legend()
     plt.show()
 
-#plot_error(f, t, h, x0, true_x, deltat_max)
+    return rk4_intercept[1], euler_intercept[1]
+    
+rk4_intercept, euler_intercept = plot_error(f, t, h, x0, true_x, deltat_max)
 
+# time and compare rk4 and euler method for the same for the same step size
+# intitial conditions
+t = np.linspace(0,1,1000)
+# time euler method
+starttime_e = timer()
+os.solve_ode(f,os.euler_step,t,[0],euler_intercept)
+endttime_e = timer()
+# time rk4 method
+starttime_rk4 = timer()
+os.solve_ode(f,os.rk4_step,t,[0],rk4_intercept)
+endttime_rk4 = timer()
+euler_time = endttime_e - starttime_e
+rk4_time = endttime_rk4 - starttime_rk4
+print(euler_time, 'Time taken to solve ode using euler method.')
+print(rk4_time, 'Time taken to solve ode using rk4 method.')
+t_diff = euler_time - rk4_time
+print(f'The rk4 method was {t_diff} seconds faster than the euler method.')
 
     ###  Exercise 3  ###
 #  initial conditions
@@ -93,4 +125,7 @@ def plot_system(f, t, x0, h):
     plt.show()
 
 plot_system(f, t, X0, h)
+
+# It is shown in these plots that with large time steps and over a large range of t,
+# that the system becomes increasingly unstable
     
