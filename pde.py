@@ -6,7 +6,7 @@
 #   u=u_I(x) 0<=x<=L,t=0
 
 import numpy as np
-import pylab as pl
+import matplotlib.pyplot as plt
 from math import pi
 from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
@@ -117,11 +117,11 @@ mt = 1000   # number of gridpoints in time
 
 x, u_j = solve_pde(u_I, heat_boundary, L, T, mt, mx, kappa, method = 'crank')
 
-# Plot the final result and exact solution
-pl.plot(x,u_j,'ro',label='num')
+# plot the final result and exact solution
+plt.plot(x,u_j,'ro',label='num')
 xx = np.linspace(0,L,250)
-pl.plot(xx,u_exact(xx,T),'b-',label='exact')
-pl.xlabel('x')
-pl.ylabel('u(x,0.5)')
-pl.legend()
-pl.show()
+plt.plot(xx,u_exact(xx,T),'b-',label='exact')
+plt.xlabel('x')
+plt.ylabel('u(x,0.5)')
+plt.legend()
+plt.show()
