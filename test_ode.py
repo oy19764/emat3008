@@ -7,14 +7,14 @@ import matplotlib.pyplot as plt
     ### Exercise 1 ###
 
 # dx/dt = x #
-def f(t, x):
+def f(x, t):
     
     return x
 
 # Initial conditions: #
 x0 = [1]
 t = np.linspace(1,2,2)
-h=np.logspace(-6,0,100)#h = np.linspace(0.00005, 0.5, 5000)
+h = np.linspace(0.00005, 0.5, 5000)
 true_x = math.exp(1)
 deltat_max = 1
 
@@ -40,12 +40,11 @@ def plot_error(f, t, h, x0, true_x, deltat_max):
     plt.loglog(x_axis, y_axis2, marker='.', markersize=4, color='r', label='rk4 error')
     plt.ylabel('Error')
     plt.xlabel('Step Size')
+    plt.title('Error plot for the rk4 and euler method for increasing step size')
     plt.legend()
     plt.show()
 
 #plot_error(f, t, h, x0, true_x, deltat_max)
-
-
 
 
     ###  Exercise 3  ###
@@ -53,8 +52,8 @@ def plot_error(f, t, h, x0, true_x, deltat_max):
 x0 = 0
 a0 = 1
 X0 = [x0, a0]
-h = 0.0001
-t = np.linspace(0,math.pi,500)
+h = 1
+t = np.linspace(0,500,500)
 
 """
 x'' = -x
@@ -68,7 +67,7 @@ X' = f(X, t)
 """
 
 # d2x/dt2 = -x #
-def f(t, X):
+def f(X, t):
     x = X[0]
     a = X[1]
     dxdt = a
@@ -78,19 +77,20 @@ def f(t, X):
     return dXdt
 
 
-def plot_system(f, t, x0, h, deltat_max):
+def plot_system(f, t, x0, h):
     
-    X = os.solve_ode(f, os.rk4_step, t, x0, h, deltat_max)
+    X = os.solve_ode(f, os.rk4_step, t, x0, h)
     x = X[:,0]
     xdot = X[:,1]
     
     # x against t
+    plt.subplot(1,2,1)
     plt.plot(t, x)
-    plt.show()
 
     # x against xdot
+    plt.subplot(1,2,2)
     plt.plot(xdot, x)
     plt.show()
 
-plot_system(f, t, X0, h, deltat_max)
+plot_system(f, t, X0, h)
     
