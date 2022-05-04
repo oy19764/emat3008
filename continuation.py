@@ -4,33 +4,35 @@ from scipy.optimize import fsolve
 import shooting
 import math
 
-def natural_parameters(f, cmax, cmin, delta_n, u0, ODE):
+def natural_parameters(f, cmax, cmin, delta_n, u0, ODE, pc):
 
     n = (cmax - cmin)/delta_n
     k = np.linspace(cmin, cmax, math.floor(abs(n)))
     
 
-    if ODE == False:
-        discretisation = lambda u, alpha, f: f(u, alpha)
-    else: 
-        discretisation = lambda u, alpha, f: shooting.shoot(f, u, alpha)
+    sol = []  
+    if ODE == False:   
+        sol.append(fsolve(lambda u: f(u, cmin), u0))
+    else:
+        sol.append(shooting.limit_cycle(f, u0, pc, cmin))
 
-    sol = []
-    sol.append(fsolve(discretisation, u0, args=(cmin, f)))      
-    
     for a in range(1, len(k)):
-        sol.append(fsolve(discretisation, sol[-1], args=(k[a], f)))   
-    
 
+        if ODE == False:   
+            sol.append(fsolve(lambda u: f(u, k[a]), sol[-1]))
+        else:
+            sol.append(shooting.limit_cycle(f, sol[-1], pc, k[a]))
+          
+    
     return sol, k
 
 
-def pseudo_arclength(f, cmax, cmin, delta_n, u0, ODE):
+def pseudo_arclength(f, cmax, cmin, delta_n, u0, ODE, pc):
 
     if ODE == False:
         discretisation = lambda u, alpha, f: f(u, alpha)
     else: 
-        discretisation = lambda u, alpha, f: shooting.shoot(f, u, alpha)
+        discretisation = lambda u, alpha, f: shooting.shoot(f, u, alpha, pc)
 
     # two input parameters: v0 and v1  -  v0 = [alpha0, u0], v1 = [alpha1, u1]
     n = (cmax - cmin)/delta_n
