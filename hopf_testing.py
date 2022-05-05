@@ -49,37 +49,74 @@ def true_hopf_3d(t, beta, theta =  0.0):
 
     return np.array((u1, u2, u3))
 
-t = np.linspace(0,10,101)
-sol = os.solve_ode(hopf, os.rk4_step, t, (1.4,0), 0.001, 2)
-u1 = sol[:,0]
-u2= sol[:,1]
-plt.plot(t,u1)
-plt.plot(t,u2)
-plt.show()
+# t = np.linspace(0,10,101)
+# sol = os.solve_ode(hopf, os.rk4_step, t, (1.4,0), 0.001, 2)
+# u1 = sol[:,0]
+# u2= sol[:,1]
+# plt.plot(t,u1)
+# plt.plot(t,u2)
+# plt.show()
 
+# sol = shooting.limit_cycle(hopf, (-1,0,5), 1, 1.0)
+# u0 = sol[:-1] 
+# T = sol[-1]
 
    
 
 
 class Test_shooting(unittest.TestCase):
-
+        
     def setUp(self):
+        #setup equation to solve
+        self.f = hopf
+        self.true_f = true_hopf
+        self.U0 = (-1,0,6)
+        self.pc = 0
+        self.args = 1.0
         # 2d testing
         # find limit cycle using shooting function
-        self.u0, self.T = shooting.limit_cycle(hopf, (-1,0), 5, 1.0)
-        
+        sol = shooting.limit_cycle(self.f, self.U0, self.pc, self.args)
+        self.u0 = sol[:-1] 
+        self.T = sol[-1]
+
         # use limit cycle to get solution to hopf over the cycle
         t = np.linspace(0,self.T,51)
-        sol = os.solve_ode(hopf, os.rk4_step, t, self.u0, 0.001, 1.0)
+        sol = os.solve_ode(self.f, os.rk4_step, t, self.u0, 0.001, self.args)
+        
+        # for i in range(0, len(self.u0[:-1])):
         self.u1 = sol[:,0]
         self.u2 = sol[:,1]
        
         # get solution to the true hopf over the same t
-        self.u1_true, self.u2_true = true_hopf(t, beta=1, theta=np.pi)
+        self.u1_true, self.u2_true = self.true_f(t, beta=1, theta=np.pi)
 
 #------------------------------------------------------------------------------------------#
+    # testing    
+
+    def test_u0(self):
+        # test same initial conditions are found
+        for i in range(0, len(self.u0[:-1])):
+            self.assertAlmostEqual(self.u0[i], self.u1_true[0])
+        #self.assertAlmostEqual(self.u0[1], self.u2_true[0])
         
-        # 3d testing
+    def test_period(self):
+        # test the period found is 2*pi
+        self.assertAlmostEqual(self.T, np.pi*2)
+        
+    def test_limit_cycle(self):
+        # test that all calculated points fit the true solution
+        self.assertAlmostEqual(self.u1.all(), self.u1_true.all())
+        self.assertAlmostEqual(self.u2.all(), self.u2_true.all())
+       
+
+if __name__ == '__main__':
+    unittest.main()
+
+
+
+"""
+3d tests
+ # 3d testing 
         # find limit cycle using shooting function
         self.u0_3d, self.T_3d = shooting.limit_cycle(hopf_3d, (-1,0,1), 5, 1.0)
 
@@ -93,44 +130,24 @@ class Test_shooting(unittest.TestCase):
         # get solution to the true hopf over the same t
         self.u1_true_3d, self.u2_true_3d, self.u3_true_3d = true_hopf_3d(t_3d, beta=1, theta=np.pi)
         
-
-        
-        
-
-    def test_u0(self):
-        # test same initial conditions are found
-        self.assertAlmostEqual(self.u0[0], self.u1_true[0])
-        self.assertAlmostEqual(self.u0[1], self.u2_true[0])
-        # 3d test
+# 3d test u0
         self.assertAlmostEqual(self.u0_3d[0], self.u1_true_3d[0])
         self.assertAlmostEqual(self.u0_3d[1], self.u2_true_3d[0])
         self.assertAlmostEqual(self.u0_3d[2], self.u2_true_3d[0])
 
 
-    def test_period(self):
-        # test the period found is 2*pi
-        self.assertAlmostEqual(self.T, np.pi*2)
-        # 3d test
+ # 3d test T
         self.assertAlmostEqual(self.T_3d, np.pi*2)
 
-    def test_cycle(self):
-        # test that the endpoints of the cycle = the initial conditions
-        self.assertAlmostEqual(self.u1[0], self.u1[-1])
-        self.assertAlmostEqual(self.u2[0], self.u2[-1])
-        # 3d test 
+
+# 3d test cycle
         self.assertAlmostEqual(self.u1_3d[0], self.u1_3d[-1])
         self.assertAlmostEqual(self.u2_3d[0], self.u2_3d[-1])
         self.assertAlmostEqual(self.u3_3d[0], self.u3_3d[-1])
 
-    def test_limit_cycle(self):
-        # test that all calculated points fit the true solution
-        self.assertAlmostEqual(self.u1.all(), self.u1_true.all())
-        self.assertAlmostEqual(self.u2.all(), self.u2_true.all())
-        # 3d test
+ # 3d test limit cycle
         self.assertAlmostEqual(self.u1_3d.all(), self.u1_true_3d.all())
         self.assertAlmostEqual(self.u2_3d.all(), self.u2_true_3d.all())
         self.assertAlmostEqual(self.u3_3d.all(), self.u3_true_3d.all())
 
-
-if __name__ == '__main__':
-    unittest.main()
+"""
