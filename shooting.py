@@ -1,6 +1,7 @@
 import numpy as np
 import ODE_solver as os
 from scipy.optimize import fsolve
+from ODE_solver import test_inputs
 
 
 
@@ -12,7 +13,7 @@ def G(ODE, u0, T, pc, *args):
                 ODE (function):         The ODE of which the limit cycle is to be found
                 u0 (tuple):             Estimate of the startig conditions
                 T (float):              Esstimate of the time period
-                pc                      Phase condition to be used
+                pc(int)                      Phase condition to be used
                 args:                   Any additional arguments required for the ODE
         """    
 
@@ -34,7 +35,7 @@ def shoot(ODE, U, pc, *args):
 
 def limit_cycle(ODE ,U0, pc,*args):
     """
-    Solves the shooting problem to find the roots to G, hence u0 ant T which are
+    Solves the shooting problem to find the roots to G, hence u0 and T which are
     the conditions to make a limit cycle
         Parameters:
                 ODE (function):         The ODE of which the limit cycle is to be found
@@ -46,6 +47,15 @@ def limit_cycle(ODE ,U0, pc,*args):
                 u0 (tuple):             Initial conditions of the limit cycle
                 T (float):              Time period of the limit cycle
     """
+    # test inputs
+    # test ODE is a function:
+    test_inputs(ODE, 'ODE', 'test_function')
+    # test U0 is a tuple:
+    test_inputs(U0,'U0', 'test_tuple')
+    # test pc is an integer
+    test_inputs(pc,'pc','test_int_or_float')
+    
+
     sol = fsolve(lambda U: shoot(ODE, U, pc, *args), U0)
    
     return sol          
