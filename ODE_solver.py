@@ -79,6 +79,55 @@ def solve_to(f, method, t0, t1, h, x0, deltat_max, *args):
     return x
 
 
+def test_inputs(input, input_name, test_name):
+    """
+    Testing function to check function inputs are valid.
+        Parameters:
+            input:          input being tested
+            input_name:     name of input being tested
+            test_name:      test to check input with
+    """
+    # define tests
+    def test_int_or_float(input, input_name):
+        if not isinstance(input, (int, float, np.int_, np.float_)):
+            raise TypeError(f"{input_name}: {input} is not a valid type. \n" 
+                            "Please input an integer or a float")
+    
+
+    def test_function(input, input_name):
+        if not callable(input):
+            raise TypeError(f"{input_name} is not a valid input. \n" 
+                            "Please input a function")
+
+    
+    def test_array(input, input_name):
+        if not isinstance(input, np.ndarray):
+            raise TypeError(f"{input_name} is not a valid type. \n" 
+                            "Please input a numpy array")
+
+
+    def test_tuple(input, input_name):
+        if not isinstance(input, tuple):
+            raise TypeError(f"{input_name}: {input} is not a valid type. \n" 
+                            "Please input a tuple")
+
+
+    # call test to perform
+    if test_name == 'test_int_or_float':
+        test_int_or_float(input, input_name)
+
+    if test_name == 'test_function':
+        test_function(input, input_name)
+
+    if test_name == 'test_array':
+        test_array(input, input_name)
+
+    if test_name == 'test_tuple':
+        test_tuple(input, input_name)
+
+
+
+
 def solve_ode(f, method ,t , x0, h, *args):
     """ 
     Solves the ode over the time period t.
@@ -92,11 +141,25 @@ def solve_ode(f, method ,t , x0, h, *args):
         Returns:
             sol_array(ndarray): Solutions to the ODE for each time value in t
     """
+    # test parameters:
+    # test f is a function
+    test_inputs(f, 'f', 'test_function')
+    # test method is a function
+    test_inputs(method, 'method', 'test_function')
+    # test t is an array
+    test_inputs(t, 't', 'test_array')
+    # TODO fix x0
+    # test h is float
+    test_inputs(t, 't', 'test_int_or_float')
+
+
+
+
+
     deltat_max = 1
-    
     t0 = t[0]
     sol_array = np.zeros((len(t), len(x0)))
-
+   
     sol_array[0]= x0
     
     for i in range(1, len(t)):
@@ -110,5 +173,4 @@ def solve_ode(f, method ,t , x0, h, *args):
 
 
 
-#
 
