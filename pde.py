@@ -11,6 +11,7 @@ from math import pi
 from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import csr_matrix
+from ODE_solver import test_inputs
 
 
 def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
@@ -29,6 +30,8 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             method(str):        method to use to solve PDE
         Returns:
     """
+    # 
+
     # Set up the numerical environment variables
     x = np.linspace(0, L, mx+1)     # mesh points in space
     t = np.linspace(0, T, mt+1)     # mesh points in time
@@ -40,7 +43,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
     print("lambda=",lmbda)
 
 
-    def boundary_type(boundary, pj, qj):
+    def boundary_type(boundary):
         if boundary == 'dirilichet':
             matrix_dim = mx - 1
             print(matrix_dim)
@@ -126,7 +129,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
     aV = additive_vector(boundary)
     
 
-    for i in range(0,mt-1):
+    for i in range(0,mt):
         # forwad euler matrix calc
         if boundary == 'dirilichet':
             aV[0], aV[-1] = pj, qj
@@ -189,7 +192,7 @@ def u_exact(x,t):
     return y
 
 # Set numerical parameters
-mx = 30     # number of gridpoints in space
+mx = 10    # number of gridpoints in space
 mt = 1000   # number of gridpoints in time
 
 # boundary values
@@ -207,9 +210,3 @@ plt.xlabel('x')
 plt.ylabel('u(x,0.5)')
 plt.legend()
 plt.show()
-
-def dirlichet_boundary(x,t):
-    return
-
-def neuman_bundary(x,t):
-    return
