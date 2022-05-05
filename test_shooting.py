@@ -25,21 +25,23 @@ d = 0.1
 x0 = [0.35, 0.35]
 t = np.linspace(0,100,3001)
 h = 0.001
-"""
 sol = os.solve_ode(f, os.rk4_step, t, x0, h, a, b, d)
 x = sol[:,0]
 y = sol[:,1]
 
 # plot time series
+plt.subplot(1,2,1)
 plt.plot(t, x)
 plt.plot(t, y)
-plt.show()
+plt.ylabel('locta volterra values')
+plt.xlabel('t')
 # plot y against x
+plt.subplot(1,2,2)
 plt.plot(x, y)
 plt.ylabel('y')
 plt.xlabel('x')
 plt.show()
-"""
+
 # Solving using b = 0.16 < 0.26
 b = 0.16
 
@@ -47,14 +49,17 @@ sol = os.solve_ode(f, os.rk4_step, t, x0, h, a, b, d)
 x = sol[:,0]
 y = sol[:,1]
 # plot time series
+plt.subplot(1,2,1)
 plt.plot(t, x)
 plt.plot(t, y)
-plt.show()
+plt.ylabel('locta volterra values')
+plt.xlabel('t')
 # plot y against x
-#plt.plot(x, y)
-#plt.ylabel('y')
-#plt.xlabel('x')
-#plt.show()
+plt.subplot(1,2,2)
+plt.plot(x, y)
+plt.ylabel('y')
+plt.xlabel('x')
+plt.show()
 
 """
     The figures show different outcomes for the predator-prey equations depending on the value of b.
@@ -88,20 +93,18 @@ def find_orbit(f, t, x, y, h, *args):
     orbit_x = orbitsol[:,0]
     orbit_y = orbitsol[:,1]
     
-    #plt.plot(x, y)
-    #plt.plot(orbit_x, orbit_y, label='Orbit isolated')
-    #plt.ylabel('y')
-    #plt.xlabel('x')
-    #plt.legend()
-    #plt.show()    
+    plt.plot(x, y)
+    plt.plot(orbit_x, orbit_y, label='Orbit isolated')
+    plt.ylabel('y')
+    plt.xlabel('x')
+    plt.legend()
+    plt.show()    
 
-    return period, orbit_x, orbit_y
-
-
+    return period, orbit_x, orbit_y, orbitsol
 
 
 # isolated period orbit
-period, orbit_x, orbit_y = find_orbit(f, t, x, y, h, a, b, d)
+period, orbit_x, orbit_y, manual_orbitsol = find_orbit(f, t, x, y, h, a, b, d)
 #period
 print('The period of the orbit is:  {}'.format(period))
 
@@ -111,60 +114,29 @@ print('The period of the orbit is:  {}'.format(period))
 
 # An appropriate phase condition would be to use either derivative of x or y at time 0
 # dxdt(0) or dydt(0) can be used.
+phase_condition = f([0.4, 0.4], 0,a,b,d)[0] # phase condition
 
 ## Exercise 3  ##
 
 
 T = 22 # period estimate
 u0 = [0.4, 0.4] # start conditions estimate
-#print(phase_condition(U0, a, b, d))
-#print(G(U0, 0, T, a, b, d))
-#a = fsolve(G, [0.3, 0.32], args=(a,b,d))
-#print(a)
 
 
-
-def orbit(u0, T, *args):
-
-    
-    def shoot(U, *args):
-
-        def G(u0, T, *args):
-
-            sol = os.solve_ode(f, os.rk4_step, [0, T], u0, 0.001, *args)
-            g1 = u0 - sol[-1]
-            g2 = f(u0, t, *args)[1] # phase condition
-            gsol = np.append(g1, g2)
-            return gsol
-
-
-        u0 = U[:-1]
-        T = U[-1]
-        shot = G(u0, T, *args)
-
-        return shot
-
-
-    sol = fsolve(lambda U: shoot(U, *args), np.concatenate((u0, [T])))
-    u0 = sol[:-1]
-    T = sol[-1]
-    return u0, T
-
-"""
-u0, T = orbit(U0, T, a, b, d)
-
-sol_orbit = os.solve_ode(f,  os.rk4_step, np.linspace(0, T, 200), u0, 0.001, a, b, d)
-
-plt.plot(sol_orbit[:,0], sol_orbit[:,1], label='Orbit isolated')
-plt.ylabel('y')
-plt.xlabel('x')
-plt.legend()
-plt.show()    
-"""
 import shooting
-
+pc = 1 #limit cycle
 U0 = (0.4, 0.4, 22)
-print(shooting.limit_cycle(f, U0, a, b, d))
+sol = shooting.limit_cycle(f, U0, pc, a, b, d)
+u0 = sol[:-1]
+T = sol[-1]
 
-#a, b = shooting.limit_cycle(f, U0, a, b, d)
+# test orbit against manually found orbit
 
+t_orb = np.linspace(0,T,200)
+orbitsol = os.solve_ode(f, os.rk4_step, t_orb, u0, h, a, b, d)
+
+test = np.isclose(orbitsol, manual_orbitsol, atol=1e-03)
+if np.all(test) == True:
+    print('successful estimation of limit cycle')
+else:
+    print('unsuccesful estimation')
