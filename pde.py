@@ -30,7 +30,50 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             method(str):        method to use to solve PDE
         Returns:
     """
-    # 
+    # begin input tests
+    # test u_I is a function
+    test_inputs(u_I, 'u_I', 'test_function')
+    # test L is float
+    test_inputs(L, 'L', 'test_int_or_float')
+    # test T is float
+    test_inputs(T, 'T', 'test_int_or_float')
+    # test mt is float
+    test_inputs(mt, 'mt', 'test_int_or_float')
+    # test mx is float
+    test_inputs(mx, 'mx', 'test_int_or_float')
+    # test kappa is float
+    test_inputs(kappa, 'kappa', 'test_int_or_float')
+    
+    # test string inputs:
+    #test boundary conditions input
+    if not isinstance(boundary, str):
+        raise TypeError(f"Boundary condition specified: {boundary} is not a string.\n"
+                        "Please input 'dirichlet' or 'neumann'.")
+    else:
+        if boundary == 'dirichlet':
+            pass
+        elif boundary == 'neumann':
+            pass
+        else:
+            raise ValueError(f"Boundary condition specified: {boundary} is not a valid string.\n"
+                            "Please input 'dirichlet' or 'neumann'.")
+    
+    # test solving method input
+    if not isinstance(method, str):
+        raise TypeError(f"Solving method specified: {method} is not a string.\n"
+                        "Please input 'forward', 'backward' or 'crank'.")
+    else:
+        if method == 'forward':
+            pass
+        elif method == 'backward':
+            pass
+        elif method == 'crank':
+            pass
+        else:
+            raise ValueError(f"Solving method specified: {method} is not a valid string.\n"
+                            "Please input 'forward', 'backward' or 'crank'.")
+    # end input tests
+
 
     # Set up the numerical environment variables
     x = np.linspace(0, L, mx+1)     # mesh points in space
@@ -44,7 +87,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
 
 
     def boundary_type(boundary):
-        if boundary == 'dirilichet':
+        if boundary == 'dirichlet':
             matrix_dim = mx - 1
             print(matrix_dim)
             u_j = np.zeros(x.size)
@@ -66,7 +109,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
 
     # define additive vector
     def additive_vector(boundary):
-        if boundary == 'dirilichet':
+        if boundary == 'dirichlet':
             return np.zeros(mx-1)
         if boundary == 'neumann':
             return np.zeros(mx+1)
@@ -79,7 +122,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
         if method == 'forward':
             diag = [[lmbda] * (matrix_dim-1), [1 - 2*lmbda] * matrix_dim , [lmbda] * (matrix_dim-1)]
             tridiag = diags(diag, offsets = [-1,0,1], format = 'csc')
-            if boundary == 'dirilichet':
+            if boundary == 'dirichlet':
                 return tridiag, None
             if boundary == 'neumann':
                 tridiag = tridiag.toarray()
@@ -91,7 +134,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
         if method == 'backward':
             diag = [[-lmbda] * (matrix_dim-1), [1 + 2*lmbda] * matrix_dim , [-lmbda] * (matrix_dim-1)]
             tridiag = diags(diag, offsets = [-1,0,1], format = 'csc')
-            if boundary == 'dirilichet':
+            if boundary == 'dirichlet':
                 return tridiag, None
             if boundary == 'neumann':
                 tridiag = tridiag.toarray()
@@ -104,7 +147,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             diag2 = [[lmbda/2] * (matrix_dim-1), [1 - lmbda] * matrix_dim , [lmbda/2] * (matrix_dim-1)]
             tridiag = diags(diag, offsets = [-1,0,1], format = 'csc')
             tridiag2 = diags(diag2, offsets = [-1,0,1], format = 'csc')
-            if boundary == 'dirilichet':
+            if boundary == 'dirichlet':
                 return tridiag, tridiag2
             if boundary == 'neumann':
                 tridiag = tridiag.toarray()
@@ -117,7 +160,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             
                 
 
-    matrix_dim, u_j = boundary_type(boundary, pj, qj)
+    matrix_dim, u_j = boundary_type(boundary)
     u_jp1 = np.zeros(mx+1)
     
    
@@ -131,7 +174,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
 
     for i in range(0,mt):
         # forwad euler matrix calc
-        if boundary == 'dirilichet':
+        if boundary == 'dirichlet':
             aV[0], aV[-1] = pj, qj
             if method == 'forward':
                 u_jp1[1:-1] = diag1.dot(u_j[1:-1]) + aV * lmbda
@@ -150,6 +193,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             #initialise u_j for the next time step
             u_j[:] = u_jp1[:]
 
+
         if boundary == 'neumann':
             aV[0], aV[-1] = -pj, qj
             if method == 'forward':
@@ -162,7 +206,6 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
                 u_jp1 = spsolve(diag1, diag2.dot(u_j)) + aV * lmbda
                 
             u_j[:] = u_jp1[:]
-
 
 
     return x, u_j
@@ -200,7 +243,7 @@ p = 0
 q = 0
 
 
-x, u_j = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'neumann', method = 'crank')
+x, u_j = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'dirichlet', method = 'forward')
 
 # plot the final result and exact solution
 plt.plot(x,u_j,'ro',label='num')
