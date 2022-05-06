@@ -58,12 +58,28 @@ def solve_to(f, method, t0, t1, h, x0, deltat_max, *args):
         Returns:
             x:                  x values at time t1
     """
+    # test parameters:
+    # test f is a function
+    test_inputs(f, 'f', 'test_function')
+    # test method is a function
+    test_inputs(method, 'method', 'test_function')
+    # test t0 is an integer or float
+    test_inputs(t0, 't0', 'test_int_or_float')
+    # test t1 is an integer or float
+    test_inputs(t1, 't1', 'test_int_or_float')
+    # test h is an integer or float
+    test_inputs(h, 'h', 'test_int_or_float')
+    # test deltat_max is an integer or float
+    test_inputs(deltat_max, 'deltat_max', 'test_int_or_float')
+
+
+
     t = t0
     f_array = []
     space = t1-t
     x=x0
     if h > deltat_max:
-        return print(' step value too high')
+        raise ValueError(f"h value: {h}, is greater than maximimum accepted step size: {deltat_max}")
     else:
         remainder = space%h
         repeats = (space - remainder)/h
@@ -79,7 +95,7 @@ def solve_to(f, method, t0, t1, h, x0, deltat_max, *args):
     return x
 
 
-def test_inputs(input, input_name, test_name):
+def test_inputs(input, input_name, test_name, ):
     """
     Testing function to check function inputs are valid.
         Parameters:
@@ -111,7 +127,12 @@ def test_inputs(input, input_name, test_name):
             raise TypeError(f"{input_name}: {input} is not a valid type. \n" 
                             "Please input a tuple")
 
+    def test_bool(input, input_name):
+        if not isinstance(input, bool):
+            raise TypeError(f"{input_name}: {input} is not a valid type. \n" 
+                            "Please input a boolean ('True' or 'False')")
 
+   
     # call test to perform
     if test_name == 'test_int_or_float':
         test_int_or_float(input, input_name)
@@ -125,10 +146,13 @@ def test_inputs(input, input_name, test_name):
     if test_name == 'test_tuple':
         test_tuple(input, input_name)
 
+    if test_name == 'test_bool':
+        test_bool(input, input_name)
 
 
 
-def solve_ode(f, method ,t , x0, h, *args):
+
+def solve_ode(f, method ,t , x0, h, system=False,*args):
     """ 
     Solves the ode over the time period t.
         Parameters:
@@ -137,6 +161,7 @@ def solve_ode(f, method ,t , x0, h, *args):
             t(ndarray):         t values to solve the ODE for
             x0(tuple):          Initial known value of x
             h(float):           Step size
+            system(boolean):    Boolean indicating wether or f is a system of equations
             *args:              Any additional arguments required for the ODE
         Returns:
             sol_array(ndarray): Solutions to the ODE for each time value in t
@@ -148,18 +173,26 @@ def solve_ode(f, method ,t , x0, h, *args):
     test_inputs(method, 'method', 'test_function')
     # test t is an array
     test_inputs(t, 't', 'test_array')
-    # TODO fix x0
     # test h is float
-    test_inputs(t, 't', 'test_int_or_float')
+    test_inputs(h, 'h', 'test_int_or_float')
+    # test system is bool
+    test_inputs(system, 'system', 'test_bool')
 
 
 
+    # define array of solutions
+    if system == True:
+        # test x0 is an array
+        (x0, 'x0', 'test_array')
+        sol_array = np.zeros((len(t), len(x0)))
+    elif system == False:
+        # test x0 is an integer or float
+        (x0, 'x0', 'test_int_or_float')
+        sol_array = np.zeros((len(t)))
 
-
+    #define deltat_max
     deltat_max = 1
     t0 = t[0]
-    sol_array = np.zeros((len(t), len(x0)))
-   
     sol_array[0]= x0
     
     for i in range(1, len(t)):
