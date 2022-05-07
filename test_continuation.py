@@ -9,12 +9,12 @@ def cubic(x, c):
 
     return x**3 - x + c
 
-cmax = 2
-cmin = -2
+cmax = -2
+cmin = 2
 delta_n = 0.001 # step size
-
+pararmeter_range = (-2,2)
 discretisation = lambda x: x
-sol, alpha = natural_parameters(cubic, cmax, cmin, delta_n, 2, discretisation, solver=fsolve)
+sol, alpha = natural_parameters(cubic, pararmeter_range, delta_n, 2, discretisation, solver=fsolve)
 plt.plot(alpha, sol)
 plt.show()
 
@@ -29,13 +29,16 @@ def hopf(u, t, beta):
 
     return np.array((du1dt, du2dt))
 
-cmin = 0
-cmax = 2
-delta_n = 0.01 # step size
 
+delta_n = 0.01 # step size
+pararmeter_range = (2,-1)
 discretisation = shoot
-sol, alpha = natural_parameters(hopf, cmax, cmin, delta_n, (1.2, 1.2, 6.3), discretisation, solver=fsolve, pc=1)
-print(sol)
+def pc(u0, *args):
+    return hopf(u0, 0, *args)[0]
+
+U0 = (1.2,1.2,6.4)
+sol, alpha = natural_parameters(hopf, pararmeter_range, delta_n, U0, discretisation, fsolve, pc)
+#print(sol)
 
 u1 = [sol[0][0]]
 u2 = [sol[0][1]]
@@ -55,8 +58,6 @@ def true_hopf(t, beta, theta = 0.0):
     u2 = np.sqrt(beta) * np.sin(t + theta)
 
     return np.array([u1, u2])
-
-
 
 
 #true_roots = []
