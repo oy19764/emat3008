@@ -117,7 +117,7 @@ def test_inputs(input, input_name, test_name, ):
 
     
     def test_array(input, input_name):
-        if not isinstance(input, np.ndarray):
+        if not isinstance(input, (np.ndarray, list)):
             raise TypeError(f"{input_name} is not a valid type. \n" 
                             "Please input a numpy array")
 
@@ -183,11 +183,11 @@ def solve_ode(f, method ,t , x0, h, system=False,*args):
     # define array of solutions
     if system == True:
         # test x0 is an array
-        (x0, 'x0', 'test_array')
+        test_inputs(x0, 'x0', 'test_array')
         sol_array = np.zeros((len(t), len(x0)))
     elif system == False:
         # test x0 is an integer or float
-        (x0, 'x0', 'test_int_or_float')
+        test_inputs(x0, 'x0', 'test_int_or_float')
         sol_array = np.zeros((len(t)))
 
     #define deltat_max
