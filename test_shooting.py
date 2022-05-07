@@ -25,40 +25,43 @@ d = 0.1
 x0 = [0.35, 0.35]
 t = np.linspace(0,100,3001)
 h = 0.001
-sol = os.solve_ode(f, os.rk4_step, t, x0, h, a, b, d)
+sol = os.solve_ode(f, os.rk4_step, t, x0, h, True, a, b, d)
 x = sol[:,0]
 y = sol[:,1]
 
 # plot time series
-plt.subplot(1,2,1)
+plt.subplot(2,2,1)
 plt.plot(t, x)
 plt.plot(t, y)
 plt.ylabel('locta volterra values')
 plt.xlabel('t')
+plt.title('locta volterra time series for b > 0.26')
 # plot y against x
-plt.subplot(1,2,2)
+plt.subplot(2,2,2)
 plt.plot(x, y)
 plt.ylabel('y')
 plt.xlabel('x')
-plt.show()
+plt.title('locta volterra phase portrait for b > 0.26')
 
 # Solving using b = 0.16 < 0.26
 b = 0.16
 
-sol = os.solve_ode(f, os.rk4_step, t, x0, h, a, b, d)
+sol = os.solve_ode(f, os.rk4_step, t, x0, h, True, a, b, d)
 x = sol[:,0]
 y = sol[:,1]
 # plot time series
-plt.subplot(1,2,1)
+plt.subplot(2,2,3)
 plt.plot(t, x)
 plt.plot(t, y)
 plt.ylabel('locta volterra values')
 plt.xlabel('t')
+plt.title('locta volterra time series for b < 0.26')
 # plot y against x
-plt.subplot(1,2,2)
+plt.subplot(2,2,4)
 plt.plot(x, y)
 plt.ylabel('y')
 plt.xlabel('x')
+plt.title('locta volterra phase portrait for b < 0.26')
 plt.show()
 
 """
@@ -88,7 +91,7 @@ def find_orbit(f, t, x, y, h, *args):
     start = intersect[-2]
    
     t_orb = np.linspace(period_list[-2],period_list[-1],200)
-    orbitsol = os.solve_ode(f, os.rk4_step, t_orb, start, h, *args)
+    orbitsol = os.solve_ode(f, os.rk4_step, t_orb, start, h, True,*args)
 
     orbit_x = orbitsol[:,0]
     orbit_y = orbitsol[:,1]
@@ -114,7 +117,8 @@ print('The period of the orbit is:  {}'.format(period))
 
 # An appropriate phase condition would be to use either derivative of x or y at time 0
 # dxdt(0) or dydt(0) can be used.
-phase_condition = f([0.4, 0.4], 0,a,b,d)[0] # phase condition
+def phase_condition(u0, *args): 
+    return f(u0, 0,*args)[1] # phase condition
 
 ## Exercise 3  ##
 
@@ -124,16 +128,16 @@ u0 = [0.4, 0.4] # start conditions estimate
 
 
 import shooting
-pc = 1 #limit cycle
+# limit cycle functon taken from Exercise 2
 U0 = (0.4, 0.4, 22)
-sol = shooting.limit_cycle(f, U0, pc, a, b, d)
+sol = shooting.limit_cycle(f, U0, phase_condition, a, b, d)
 u0 = sol[:-1]
 T = sol[-1]
 
 # test orbit against manually found orbit
 
 t_orb = np.linspace(0,T,200)
-orbitsol = os.solve_ode(f, os.rk4_step, t_orb, u0, h, a, b, d)
+orbitsol = os.solve_ode(f, os.rk4_step, t_orb, u0, h, True, a, b, d)
 
 test = np.isclose(orbitsol, manual_orbitsol, atol=1e-03)
 if np.all(test) == True:
