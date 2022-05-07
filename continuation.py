@@ -15,7 +15,8 @@ def natural_parameters(f, cmax, cmin, delta_n, u0, discretisation, solver=fsolve
             return solver(discretisation(f), u0, args=alpha)
         else:
             #arg = (pc, alpha)
-            return(solver(lambda U: discretisation(f, U, pc, alpha), np.round(u0, 5)))
+            return(discretisation(f, u0, pc, alpha))
+
 
 
         #return solver(discretisation(f), u0, args=arg)
@@ -32,12 +33,10 @@ def natural_parameters(f, cmax, cmin, delta_n, u0, discretisation, solver=fsolve
     # else:
     #     sol.append(shooting.limit_cycle(f, u0, pc, cmin)) # discretisation for ODE
 
-
     sol.append(get_sol(f, cmin, discretisation, u0, pc))
 
     for a in tqdm(range(1, len(param_list))):
-
-        sol.append(get_sol(f, param_list[a], discretisation, sol[-1], pc))
+        sol.append(get_sol(f, param_list[a], discretisation, tuple(sol[-1]), pc))
 
         # if ODE == False:   
         #     sol.append(fsolve(lambda u: f(u, param_list[a]), sol[-1]))
