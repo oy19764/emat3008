@@ -12,7 +12,7 @@ def f(x, t):
     return x
 
 # Initial conditions: #
-x0 = [1]
+x0 = 1
 t = np.linspace(1,2,2)
 h = np.linspace(0.00005, 0.5, 5000)
 true_x = math.exp(1)
@@ -66,11 +66,11 @@ rk4_intercept, euler_intercept = plot_error(f, t, h, x0, true_x, deltat_max)
 t = np.linspace(0,1,1000)
 # time euler method
 starttime_e = timer()
-os.solve_ode(f,os.euler_step,t,[0],euler_intercept)
+os.solve_ode(f,os.euler_step,t,0,euler_intercept,system=False)
 endttime_e = timer()
 # time rk4 method
 starttime_rk4 = timer()
-os.solve_ode(f,os.rk4_step,t,[0],rk4_intercept)
+os.solve_ode(f,os.rk4_step,t,0,rk4_intercept,system=False)
 endttime_rk4 = timer()
 euler_time = endttime_e - starttime_e
 rk4_time = endttime_rk4 - starttime_rk4
@@ -84,8 +84,9 @@ print(f'The rk4 method was {t_diff} seconds faster than the euler method.')
 x0 = 0
 a0 = 1
 X0 = [x0, a0]
-h = 1
-t = np.linspace(0,500,500)
+h = 0.7
+t = np.linspace(0,250,251)
+t2 = np.linspace(250,500,251)
 
 """
 x'' = -x
@@ -109,22 +110,37 @@ def f(X, t):
     return dXdt
 
 
-def plot_system(f, t, x0, h):
+def plot_system(f, t, t2, x0, h):
     
-    X = os.solve_ode(f, os.rk4_step, t, x0, h)
+    X = os.solve_ode(f, os.rk4_step, t, x0, h, system=True)
     x = X[:,0]
     xdot = X[:,1]
-    
+
+
+    X2 = os.solve_ode(f, os.rk4_step, t2, X[-1], h, system=True)
+    x2 = X2[:,0]
+    xdot2 = X2[:,1]
+
     # x against t
     plt.subplot(1,2,1)
-    plt.plot(t, x)
+    plt.plot(t, x, label='x for t values 0-250')
+    plt.plot(t2, x2, label = 'x for t values 250-500')
+    plt.ylabel('x')
+    plt.xlabel('t')
+    plt.title("Numerical solution x against t, for large step size")
+    plt.legend()
 
     # x against xdot
     plt.subplot(1,2,2)
-    plt.plot(xdot, x)
+    plt.plot(xdot, x, label='x for t values 0-250')
+    plt.plot(xdot2,x2,label='x for t values 250-500')
+    plt.ylabel('x dot')
+    plt.xlabel('x')
+    plt.legend()
+    plt.title("Numerical solution x' against x, for large step size")
     plt.show()
 
-plot_system(f, t, X0, h)
+plot_system(f, t, t2, X0, h)
 
 # It is shown in these plots that with large time steps and over a large range of t,
 # that the system becomes increasingly unstable
