@@ -16,7 +16,7 @@ from ODE_solver import test_inputs
 
 def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
     """ 
-    Makes a single Euler step of step size h for the given function.
+    Solves PDE for the given boundary condition under the specified method
         Parameters:
             u_I(function)       initial condition equation, takes x as arguments
             L(float):           length of spatial domain
@@ -54,9 +54,11 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             pass
         elif boundary == 'neumann':
             pass
+        elif boundary == 'periodic':
+            pass
         else:
             raise ValueError(f"Boundary condition specified: {boundary} is not a valid string.\n"
-                            "Please input 'dirichlet' or 'neumann'.")
+                            "Please input 'dirichlet', 'periodic' or 'neumann'.")
     
     # test solving method input
     if not isinstance(method, str):
@@ -77,10 +79,13 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
 
     # Set up the numerical environment variables
     x = np.linspace(0, L, mx+1)     # mesh points in space
+    if boundary == 'periodic':
+        x = np.linspace(0, L, mx) 
     t = np.linspace(0, T, mt+1)     # mesh points in time
     deltax = x[1] - x[0]            # gridspacing in x
     deltat = t[1] - t[0]            # gridspacing in t
     lmbda = kappa*deltat/(deltax**2)    # mesh fourier number
+    #lmbda = kappa*deltax/(deltat**2)
     print("deltax=",deltax)
     print("deltat=",deltat)
     print("lambda=",lmbda)
@@ -91,21 +96,28 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             matrix_dim = mx - 1
             print(matrix_dim)
             u_j = np.zeros(x.size)
-            #u_j[0] = pj
-            #u_j[-1] = qj
             for i in range(0,len(u_j)):
                 u_j[i] = u_I(x[i])
-
+            
             return matrix_dim, u_j
 
 
         if boundary == 'neumann':
             matrix_dim = mx + 1
             u_j = np.zeros(x.size)
-            
+            for i in range(0,len(u_j)):
+                u_j[i] = u_I(x[i])
+            print(np.round(u_j,4))
+            return matrix_dim, u_j
+
+        
+        if boundary == 'periodic':
+            matrix_dim = mx
+            u_j = np.zeros(mx)
             for i in range(0,len(u_j)):
                 u_j[i] = u_I(x[i])
             return matrix_dim, u_j
+
 
     # define additive vector
     def additive_vector(boundary):
@@ -124,10 +136,16 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             tridiag = diags(diag, offsets = [-1,0,1], format = 'csc')
             if boundary == 'dirichlet':
                 return tridiag, None
-            if boundary == 'neumann':
+            elif boundary == 'periodic':
+                tridiag = tridiag.toarray()
+                tridiag[-1,0] = lmbda
+                tridiag[0,-1] = lmbda
+                return tridiag, None
+            elif boundary == 'neumann':
                 tridiag = tridiag.toarray()
                 tridiag[0,1] *= 2
                 tridiag[-1,-2] *= 2   
+                print(tridiag)
                 return csr_matrix(tridiag), None
         
         #backwards euler
@@ -136,7 +154,12 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             tridiag = diags(diag, offsets = [-1,0,1], format = 'csc')
             if boundary == 'dirichlet':
                 return tridiag, None
-            if boundary == 'neumann':
+            elif boundary == 'periodic':
+                tridiag = tridiag.toarray()
+                tridiag[-1,0] = lmbda
+                tridiag[0,-1] = lmbda
+                return tridiag, None
+            elif boundary == 'neumann':
                 tridiag = tridiag.toarray()
                 tridiag[0,1] = tridiag[0,1]*2
                 tridiag[-1,-2] = tridiag[-1,-2]*2
@@ -149,7 +172,14 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             tridiag2 = diags(diag2, offsets = [-1,0,1], format = 'csc')
             if boundary == 'dirichlet':
                 return tridiag, tridiag2
-            if boundary == 'neumann':
+            elif boundary == 'periodic':
+                tridiag = tridiag.toarray()
+                tridiag[-1,0] = lmbda
+                tridiag[0,-1] = lmbda
+                tridiag2[-1,0] = lmbda
+                tridiag2[0,-1] = lmbda
+                return tridiag, tridiag2
+            elif boundary == 'neumann':
                 tridiag = tridiag.toarray()
                 tridiag2 = tridiag2.toarray()
                 tridiag[0,1] = tridiag[0,1]*2
@@ -175,7 +205,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
     for i in range(0,mt):
         # forwad euler matrix calc
         if boundary == 'dirichlet':
-            aV[0], aV[-1] = pj, qj
+            aV[0], aV[-1] = pj(t[i]), qj(t[i])
             if method == 'forward':
                 u_jp1[1:-1] = diag1.dot(u_j[1:-1]) + aV * lmbda
 
@@ -195,18 +225,28 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
 
 
         if boundary == 'neumann':
-            aV[0], aV[-1] = -pj, qj
+            aV[0], aV[-1] = -pj(t[i]), qj(t[i])
             if method == 'forward':
                 u_jp1 = diag1.dot(u_j) + 2 * lmbda * deltax * aV
             # backwards euler matrix calc
             if method == 'backward':
-                u_jp1 = spsolve(diag1, u_j) + aV * lmbda
+                u_jp1 = spsolve(diag1, u_j) + 2 * aV * lmbda
             # crank-nicholson matrix calc
             if method == 'crank': #that soulja boy
-                u_jp1 = spsolve(diag1, diag2.dot(u_j)) + aV * lmbda
+                u_jp1 = spsolve(diag1, diag2.dot(u_j)) + 2 * aV * lmbda
                 
             u_j[:] = u_jp1[:]
 
+        if boundary == 'periodic':
+
+            if method == 'forward':
+                u_jp1 = diag1.dot(u_j)
+
+            if method == 'backward':
+                u_jp1 = spsolve(diag1, u_j)
+
+            if method == 'crank':
+                u_jp1 = spsolve(diag1, diag2.dot(u_j))
 
     return x, u_j
 
@@ -239,17 +279,19 @@ mx = 10    # number of gridpoints in space
 mt = 1000   # number of gridpoints in time
 
 # boundary values
-p = 0
-q = 0
+def p(t):
+    return 0
+def q(t):
+    return 0
 
 
-x, u_j = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'dirichlet', method = 'forward')
+# x, u_j = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'dirichlet', method = 'forward')
 
-# plot the final result and exact solution
-plt.plot(x,u_j,'ro',label='num')
-xx = np.linspace(0,L,250)
-plt.plot(xx,u_exact(xx,T),'b-',label='exact')
-plt.xlabel('x')
-plt.ylabel('u(x,0.5)')
-plt.legend()
-plt.show()
+# # plot the final result and exact solution
+# plt.plot(x,u_j,'ro',label='num')
+# xx = np.linspace(0,L,250)
+# plt.plot(xx,u_exact(xx,T),'b-',label='exact')
+# plt.xlabel('x')
+# plt.ylabel('u(x,0.5)')
+# plt.legend()
+# plt.show()
