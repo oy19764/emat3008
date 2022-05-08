@@ -1,7 +1,7 @@
 import numpy as np
 import ODE_solver as os
 from scipy.optimize import fsolve
-from ODE_solver import test_inputs
+from parameter_tests import test_inputs, test_ode
 
 
 
@@ -62,28 +62,10 @@ def limit_cycle(ODE ,U0, pc,*args):
     test_inputs(U0,'U0', 'test_tuple')
     # test pc is a function
     test_inputs(pc,'pc','test_function')
+    # test ODE is an ODE:
+    test_ode(f, U0[:-1], *args)
 
-    # test ODE is a function:
-    if callable(ODE):
-        # test f returns valid output
-        t_test = U0[-1]
-        test_output = ODE(U0[:-1], t_test, *args)
-        # test valid output type
-        if isinstance(test_output, (int, float ,np.int_, np.float_, list, np.ndarray)):
-            # test valid output size
-            if np.array(test_output).shape == np.array(U0[:-1]).shape:
-               pass
-            else:
-                raise ValueError(f"Invalid output shape from ODE function {ODE},\n"
-                                "x0 and {ODE} output should have the same shape")
-        else:
-            raise TypeError(f"Output from ODE function is a {type(test_output)},\n"
-            "output should be an integer, float, list or array")
-    else: 
-        raise TypeError(f"{ODE} is not a valid input type. \n" 
-                            "Please input a function")
 
-    
     sol = fsolve(shoot(ODE),U0,args=(pc,*args))        
     return sol          
 
