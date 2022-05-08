@@ -11,7 +11,7 @@ from math import pi
 from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import csr_matrix
-from ODE_solver import test_inputs
+from parameter_tests import test_inputs
 
 
 def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
@@ -94,7 +94,6 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
     def boundary_type(boundary):
         if boundary == 'dirichlet':
             matrix_dim = mx - 1
-            print(matrix_dim)
             u_j = np.zeros(x.size)
             for i in range(0,len(u_j)):
                 u_j[i] = u_I(x[i])
@@ -107,7 +106,6 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             u_j = np.zeros(x.size)
             for i in range(0,len(u_j)):
                 u_j[i] = u_I(x[i])
-            print(np.round(u_j,4))
             return matrix_dim, u_j
 
         
@@ -145,7 +143,6 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
                 tridiag = tridiag.toarray()
                 tridiag[0,1] *= 2
                 tridiag[-1,-2] *= 2   
-                print(tridiag)
                 return csr_matrix(tridiag), None
         
         #backwards euler
@@ -187,9 +184,9 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
                 tridiag2[0,1] = tridiag2[0,1]*2
                 tridiag2[-1,-2] = tridiag2[-1,-2]*2
                 return csr_matrix(tridiag), csr_matrix(tridiag2)
-            
-                
+                   
 
+    # set up appropriate matrix dimensions
     matrix_dim, u_j = boundary_type(boundary)
     u_jp1 = np.zeros(mx+1)
     
@@ -248,50 +245,137 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             if method == 'crank':
                 u_jp1 = spsolve(diag1, diag2.dot(u_j))
 
+            u_jp1[0] = p(t[i])
+
     return x, u_j
 
 
 
-# Set problem parameters/functions
-kappa = 1.0   # diffusion constant
-L=1.0         # length of spatial domain
-T=0.5         # total time to solve for
+if __name__ == '__main__':
+
+    # simple forward Euler solver for the 1D heat equation
+    #   u_t = kappa u_xx  0<x<L, 0<t<T
+    # with zero-temperature boundary conditions
+    #   u=0 at x=0,L, t>0
+    # and prescribed initial temperature
+    #   u=u_I(x) 0<=x<=L,t=0
 
 
-def u_I(x):
-    # initial temperature distribution
-    y = np.sin(pi*x/L)
-    #y = np.sin(pi*x)**0.1
-    return y
+    # Set problem parameters/functions
+    kappa = 1.0   # diffusion constant
+    L=1.0         # length of spatial domain
+    T=0.5         # total time to solve for
 
-def heat_boundary(x,t):
-    # Boundary conditions u(0,t) = u(L,t) = 0
-    return 0
-
-
-def u_exact(x,t):
-    # the exact solution
-    y = np.exp(-kappa*(pi**2/L**2)*t)*np.sin(pi*x/L)
-    return y
-
-# Set numerical parameters
-mx = 10    # number of gridpoints in space
-mt = 1000   # number of gridpoints in time
-
-# boundary values
-def p(t):
-    return 0
-def q(t):
-    return 0
+    # Set numerical parameters
+    mx = 30   # number of gridpoints in space
+    mt = 1000   # number of gridpoints in time
 
 
-# x, u_j = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'dirichlet', method = 'forward')
+    # visualising changing the initial conditions
 
-# # plot the final result and exact solution
-# plt.plot(x,u_j,'ro',label='num')
-# xx = np.linspace(0,L,250)
-# plt.plot(xx,u_exact(xx,T),'b-',label='exact')
-# plt.xlabel('x')
-# plt.ylabel('u(x,0.5)')
-# plt.legend()
-# plt.show()
+    # def u_exactp(x,t,p):
+    #     # the exact solution
+    #     y = np.exp(-kappa*(pi**2/L**2)*t)*np.sin(pi*x/L)**p
+    #     return y
+
+    xx = np.linspace(0,L,250)
+    # a = np.linspace(0.5,3,6)
+    # for n in a:
+    #     plt.plot(xx,u_exactp(xx,T,n),label=f'initial condition to the power of {n}')
+    # plt.xlabel('x')
+    # plt.ylabel('u(x,0.5)')
+    # plt.title('Effect of changing the initial conditions to the power of p')
+    # plt.legend()
+    # plt.show()
+    
+
+
+    # boundary values for dirichlet
+    def p(t):
+        return 0
+    def q(t):
+        return 0
+
+    def u_I(x):
+        # initial temperature distribution
+        y = np.sin(pi*x/L)
+        #y = np.sin(pi*x)**0.1
+        return y
+
+    def u_exact(x,t):
+        # the exact solution
+        y = np.exp(-kappa*(pi**2/L**2)*t)*np.sin(pi*x/L)
+        return y
+
+
+    # plot PDE using dirilchet boundary conditions fo the forward and backward euler and
+    # crank-nicholson methods. Using boundary conditions = 0
+
+    # Forward Euler
+    x, u_jdf = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'dirichlet', method = 'forward')
+    # Backward Euler
+    x, u_jdb = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'dirichlet', method = 'backward')
+    # Crank-Nicholson
+    x, u_jdc = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'dirichlet', method = 'crank')
+    plt.subplot(1,3,1)
+    plt.plot(x,u_jdf, '*', label='Forward Euler')
+    plt.plot(x, u_jdb,'*', label='Backward Euler')
+    plt.plot(x,u_jdc,'*', label='Crank-Nicholson')
+    plt.plot(xx,u_exact(xx,T),label='Exact solution')
+    plt.xlabel('x')
+    plt.ylabel('u(x,0.5)')
+    plt.title('Plot heat pde using dirichlet boundary conditions',fontsize=8)
+    plt.legend()
+    #plt.show()
+
+
+    # plot PDE using neumann boundary conditions for the forward euler method. 
+    # Using boundary conditions p = 0, q = 1
+
+    # boundary values for neumann
+    def pn(t):
+        return 0
+    def qn(t):
+        return 0.5
+
+    # Forward Euler
+    x, u_jnf = solve_pde(u_I, L, T, mt, mx, kappa, pn, qn, boundary = 'neumann', method = 'forward')
+    # Backward Euler
+    #x, u_jnb = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'neumann', method = 'backward')
+    # Crank-Nicholson
+    #x, u_jnc = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'neumann', method = 'crank')
+
+    plt.subplot(1,3,2)
+    plt.plot(x,u_jnf, '*', label='Forward Euler')
+    #plt.plot(x, u_jnb,'*', label='Backward Euler')
+    #plt.plot(x,u_jnc,'*', label='Crank-Nicholson')
+    plt.plot(xx,u_exact(xx,T),label='Exact solution')
+    plt.xlabel('x')
+    plt.ylabel('u(x,0.5)')
+    plt.title('Plot heat pde using neumann boundary conditions',fontsize=8)
+    plt.legend()
+    #plt.show()  
+
+
+    # plot PDE using periodic boundary conditions for the forward euler method. 
+
+    #def p(t):
+    #    return 0.01
+
+    # Forward Euler
+    x, u_jpf = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'periodic', method = 'forward')
+    # Backward Euler
+    x, u_jpb = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'periodic', method = 'backward')
+    # Crank-Nicholson
+    x, u_jpc = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'periodic', method = 'crank')
+    plt.subplot(1,3,3)
+    plt.plot(x,u_jpf, '*', label='Forward Euler')
+    plt.plot(x, u_jpb,'*', label='Backward Euler')
+    plt.plot(x,u_jpc,'*', label='Crank-Nicholson')
+    plt.plot(xx,u_exact(xx,T),label='Exact solution')
+    plt.xlabel('x')
+    plt.ylabel('u(x,0.5)')
+    plt.title('Plot heat pde using Periodic boundary conditions',fontsize=8)
+    plt.legend()
+    plt.show()
+
