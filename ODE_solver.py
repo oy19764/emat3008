@@ -72,10 +72,7 @@ def solve_to(f, method, t0, t1, h, x0, deltat_max, *args):
     # test deltat_max is an integer or float
     test_inputs(deltat_max, 'deltat_max', 'test_int_or_float')
 
-
-
     t = t0
-    f_array = []
     space = t1-t
     x=x0
     if h > deltat_max:
@@ -86,12 +83,10 @@ def solve_to(f, method, t0, t1, h, x0, deltat_max, *args):
 
         for i in range(int(repeats)):
             x, t = method(f, x, t, h, *args)
-            f_array.append(x)
 
         if remainder != 0:
             x, t = method(f, x, t, remainder, *args)
-            f_array.append(x)
-
+            
     return x
 
 
@@ -114,7 +109,7 @@ def test_inputs(input, input_name, test_name, ):
         if not callable(input):
             raise TypeError(f"{input_name} is not a valid input. \n" 
                             "Please input a function")
-
+    
     
     def test_array(input, input_name):
         if not isinstance(input, (np.ndarray, list)):
@@ -131,7 +126,6 @@ def test_inputs(input, input_name, test_name, ):
         if not isinstance(input, bool):
             raise TypeError(f"{input_name}: {input} is not a valid type. \n" 
                             "Please input a boolean ('True' or 'False')")
-
    
     # call test to perform
     if test_name == 'test_int_or_float':
@@ -151,7 +145,6 @@ def test_inputs(input, input_name, test_name, ):
 
 
 
-
 def solve_ode(f, method ,t , x0, h, system=False,*args):
     """ 
     Solves the ode over the time period t.
@@ -166,9 +159,8 @@ def solve_ode(f, method ,t , x0, h, system=False,*args):
         Returns:
             sol_array(ndarray): Solutions to the ODE for each time value in t
     """
+    
     # test parameters:
-    # test f is a function
-    test_inputs(f, 'f', 'test_function')
     # test method is a function
     test_inputs(method, 'method', 'test_function')
     # test t is an array
@@ -177,7 +169,25 @@ def solve_ode(f, method ,t , x0, h, system=False,*args):
     test_inputs(h, 'h', 'test_int_or_float')
     # test system is bool
     test_inputs(system, 'system', 'test_bool')
-
+    # test f is a function
+    if callable(f):
+        # test f returns valid output
+        t_test = t[0]
+        test_output = f(x0, t_test, *args)
+        # test valid output type
+        if isinstance(test_output, (int, float, np.int_, np.float_, list, np.ndarray)):
+            # test valid output size
+            if np.array(test_output).shape == np.array(x0).shape:
+               pass
+            else:
+                raise ValueError(f"Invalid output shape from ODE function {f},\n"
+                                "x0 and {f} output should have the same shape")
+        else:
+            raise TypeError(f"Output from ODE function is a {type(test_output)},\n"
+            "output should be an integer, float, list or array")
+    else: 
+        raise TypeError(f"{f} is not a valid input type. \n" 
+                            "Please input a function")
 
 
     # define array of solutions
