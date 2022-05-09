@@ -149,11 +149,6 @@ def pseudo_arclength(f, par_range, delta_n, u0, discretisation, solver=fsolve, p
     #def aug_root_finder(f, pred_vec, v1, discretisation, deltaV, deltaA):
 
 
-
-
-
-
-
     # repeat until all parameters covered
 
 
@@ -186,7 +181,7 @@ if __name__ == '__main__':
 
 
 
-    def hopf(u, t, beta):
+    def hopf(t, u, beta):
 
         u1, u2 = u
 
@@ -200,7 +195,7 @@ if __name__ == '__main__':
     pararmeter_range = (2,-1)   # changed parameter range to avoid code crashing
     discretisation = shoot
     def pc(u0, *args):
-        return hopf(u0, 0, *args)[0]
+        return hopf(0, u0, *args)[0]
 
     U0 = (1.2,1.2,6.4)
     sol, alpha = natural_parameters(hopf, pararmeter_range, delta_n, U0, discretisation, fsolve, pc)
@@ -217,7 +212,7 @@ if __name__ == '__main__':
 
 
     # plot modified hopf
-    def hopf_mod(u, t, beta):
+    def hopf_mod(t, u, beta):
 
         u1, u2 = u
 
@@ -231,7 +226,7 @@ if __name__ == '__main__':
     pararmeter_range = (2,-0.5) # changed parameter range to avoid code crashing
     discretisation = shoot
     def pc(u0, *args):
-        return hopf_mod(u0, 0, *args)[0]
+        return hopf_mod(0, u0, *args)[0]
 
     U0 = (1.2,1.2,6.4)
     sol, alpha = natural_parameters(hopf_mod, pararmeter_range, delta_n, U0, discretisation, fsolve, pc)

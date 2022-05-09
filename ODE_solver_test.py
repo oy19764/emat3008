@@ -4,14 +4,14 @@ import numpy as np
 
 # test solution accuracy for single ode's and system of ode's
 
-def ode(x, t):
+def ode(t, x):
     return x
 
 def true_ode(t):
     return np.exp(t)
 
 
-def ode_system(X, t):
+def ode_system(t, X):
     beta=1
     x, y = X
     dxdt = beta*x - y - x*(x**2 + y**2)

@@ -79,7 +79,7 @@ def test_ode(f, x0, *args):
     if callable(f):
         # test f returns valid output
         t_test = 1  # time value to test ode at
-        test_output = f(x0, t_test, *args)
+        test_output = f(t_test, x0, *args)
         # test valid output type
         if isinstance(test_output, (int, float, np.int_, np.float_, list, np.ndarray)):
             # test valid output size

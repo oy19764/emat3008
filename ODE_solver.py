@@ -2,7 +2,7 @@ import numpy as np
 from parameter_tests import test_inputs, test_ode
 
 
-def euler_step(f, x0, t0, h, *args):
+def euler_step(f, t0, x0, h, *args):
     """ 
     Makes a single Euler step of step size h for the given function.
         Parameters:
@@ -15,12 +15,12 @@ def euler_step(f, x0, t0, h, *args):
             x1:                 x values after performing the step
             t1:                 t value after performing the step
     """
-    x1 = x0 + h*np.array(f(x0, t0, *args))
+    x1 = x0 + h*np.array(f(t0, x0, *args))
     t1 = t0 + h
-    return x1, t1
+    return t1, x1
 
 
-def rk4_step(f, x0, t0, h, *args):
+def rk4_step(f, t0, x0, h, *args):
     """ 
     Makes a single RK4 step of step size h for the given function.
         Parameters:
@@ -33,13 +33,13 @@ def rk4_step(f, x0, t0, h, *args):
             x1:                 x values after performing the step
             t1:                 t value after performing the step
     """
-    k1 = np.array(f(x0, t0, *args))
-    k2 = np.array(f((x0+h*k1/2), (t0+h/2), *args))
-    k3 = np.array(f((x0+h*k2/2), (t0+h/2), *args))
-    k4 = np.array(f((x0+h*k3), (t0+h), *args))
+    k1 = np.array(f(t0, x0, *args))
+    k2 = np.array(f((t0+h/2), (x0+h*k1/2), *args))
+    k3 = np.array(f((t0+h/2), (x0+h*k2/2), *args))
+    k4 = np.array(f((t0+h), (x0+h*k3), *args))
     x1 = x0 + h*(k1+2*k2+2*k3+k4)/6
     t1 = t0 + h
-    return x1, t1
+    return t1, x1
 
 
 def solve_to(f, method, t0, t1, h, x0, deltat_max, *args):
@@ -83,10 +83,10 @@ def solve_to(f, method, t0, t1, h, x0, deltat_max, *args):
         repeats = (space - remainder)/h
 
         for i in range(int(repeats)):
-            x, t = method(f, x, t, h, *args)
+            t, x = method(f, t, x, h, *args)
 
         if remainder != 0:
-            x, t = method(f, x, t, remainder, *args)
+            t, x = method(f, t, x, remainder, *args)
             
     return x
 
@@ -158,7 +158,7 @@ if __name__ == '__main__':
         ### Exercise 1 ###
 
     # dx/dt = x #
-    def f(x, t):
+    def f(t, x):
         
         return x
 
@@ -214,7 +214,7 @@ if __name__ == '__main__':
 
     # time and compare rk4 and euler method for the same for the same step size
     # intitial conditions
-    t = np.linspace(0,1,1000)
+    t = np.linspace(0,10,1000)
     # time euler method
     starttime_e = timer()
     solve_ode(f,t,0,euler_intercept,system=False,method=euler_step)
@@ -251,7 +251,7 @@ if __name__ == '__main__':
     """
 
     # d2x/dt2 = -x #
-    def f(X, t):
+    def f(t, X):
         x = X[0]
         a = X[1]
         dxdt = a
@@ -262,11 +262,12 @@ if __name__ == '__main__':
 
 
     def plot_system(f, t, t2, x0, h):
-        
+        print(x0)
         X = solve_ode(f, t, x0, h, system=True,method=rk4_step)
         x = X[:,0]
         xdot = X[:,1]
-
+        x0 = X[-1]
+        print(x0)
         X2 = solve_ode(f, t2, x0, h, system=True,method=rk4_step)
         x2 = X2[:,0]
         xdot2 = X2[:,1]

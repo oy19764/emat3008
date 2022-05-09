@@ -11,6 +11,8 @@ def shoot(ODE):
     for fsolve, with the parameters of G to be the arguments.
         Parameters:
                 ODE (function):     ODE for which the shooting problem is to be solved
+        Output:
+                G:                  Array containing estimates for starting condions and the time period
         """
 
     def G(U, pc, *args):
@@ -21,18 +23,21 @@ def shoot(ODE):
                     U(tuple):               Tuple containing the estimate of the starting conditions and time period
                     pc(function)            The phase condition function specified to be used
                     args:                   Any additional arguments required for the ODE
+            Output:
+                    gsol:                   Array containing estimates for starting condions and the time period
         """    
         # unpack U
         u0 = U[:-1]
         T = U[-1]
         
 
-        # check shape
+        # check shape 
         if len(u0) > 1:
             system = True
         else:
             system = False
 
+        # solve ode for given estimates
         sol = os.solve_ode(ODE, [0, T], u0, 0.01, system, os.rk4_step,*args)
         g1 = u0 - sol[-1]
         g2 = pc(u0, *args)   
@@ -79,7 +84,7 @@ if __name__ == '__main__':
 
         ## Exercise 1  ##
 
-    def f(X, t, a, b, d):
+    def f(t, X, a, b, d):
 
         x = X[0]
         y = X[1]
@@ -208,7 +213,7 @@ if __name__ == '__main__':
     # dxdt(0) or dydt(0) can be used.
 
     def phase_condition(u0, *args): 
-        return f(u0, 0,*args)[1] # phase condition
+        return f(0, u0,*args)[1] # phase condition
 
 
 
