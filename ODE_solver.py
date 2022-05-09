@@ -1,6 +1,5 @@
 import numpy as np
-from input_tests import test_inputs
-
+from parameter_tests import test_inputs, test_ode
 
 
 def euler_step(f, x0, t0, h, *args):
@@ -60,8 +59,6 @@ def solve_to(f, method, t0, t1, h, x0, deltat_max, *args):
             x:                  x values at time t1
     """
     # test parameters:
-    # test f is a function
-    test_inputs(f, 'f', 'test_function')
     # test method is a function
     test_inputs(method, 'method', 'test_function')
     # test t0 is an integer or float
@@ -72,6 +69,9 @@ def solve_to(f, method, t0, t1, h, x0, deltat_max, *args):
     test_inputs(h, 'h', 'test_int_or_float')
     # test deltat_max is an integer or float
     test_inputs(deltat_max, 'deltat_max', 'test_int_or_float')
+    # test f is an ODE
+    test_ode(f, x0, *args)
+
 
     t = t0
     space = t1-t
@@ -117,27 +117,11 @@ def solve_ode(f, method ,t , x0, h, system=False,*args):
     test_inputs(h, 'h', 'test_int_or_float')
     # test system is bool
     test_inputs(system, 'system', 'test_bool')
-    # test f is a function
-    if callable(f):
-        # test f returns valid output
-        t_test = t[0]
-        test_output = f(x0, t_test, *args)
-        # test valid output type
-        if isinstance(test_output, (int, float, np.int_, np.float_, list, np.ndarray)):
-            # test valid output size
-            if np.array(test_output).shape == np.array(x0).shape:
-               pass
-            else:
-                raise ValueError(f"Invalid output shape from ODE function {f},\n"
-                                "x0 and {f} output should have the same shape")
-        else:
-            raise TypeError(f"Output from ODE function is a {type(test_output)},\n"
-            "output should be an integer, float, list or array")
-    else: 
-        raise TypeError(f"{f} is not a valid input type. \n" 
-                            "Please input a function")
-
-
+    # test f is an ODE
+    test_ode(f, x0, *args)
+    
+    
+    
     # define array of solutions
     if system == True:
         # test x0 is an array
@@ -160,10 +144,6 @@ def solve_ode(f, method ,t , x0, h, system=False,*args):
         sol_array[i] = solve_to(f, method, t0, t1, h, sol_array[i-1], deltat_max, *args)
                 
     return sol_array
-
-
-
-
 
 
 
