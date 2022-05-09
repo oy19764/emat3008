@@ -93,16 +93,16 @@ def solve_to(f, method, t0, t1, h, x0, deltat_max, *args):
 
 
 
-def solve_ode(f, method ,t , x0, h, system=False,*args):
+def solve_ode(f, t, x0, h, system=False, method=rk4_step,*args):
     """ 
     Solves the ode over the time period t.
         Parameters:
             f(function):        ODE function to solve
-            method(function):   Method to solve the ode with
             t(ndarray):         t values to solve the ODE for
             x0(tuple):          Initial known value of x
             h(float):           Step size
-            system(boolean):    Boolean indicating wether or f is a system of equations
+            system(boolean):    Boolean indicating wether or not f is a system of equations
+            method(function):   Method to solve the ode with
             *args:              Any additional arguments required for the ODE
         Returns:
             sol_array(ndarray): Solutions to the ODE for each time value in t
@@ -217,11 +217,11 @@ if __name__ == '__main__':
     t = np.linspace(0,1,1000)
     # time euler method
     starttime_e = timer()
-    solve_ode(f,euler_step,t,0,euler_intercept,system=False)
+    solve_ode(f,t,0,euler_intercept,system=False,method=euler_step)
     endttime_e = timer()
     # time rk4 method
     starttime_rk4 = timer()
-    solve_ode(f,rk4_step,t,0,rk4_intercept,system=False)
+    solve_ode(f,t,0,rk4_intercept,system=False,method=rk4_step)
     endttime_rk4 = timer()
     euler_time = endttime_e - starttime_e
     rk4_time = endttime_rk4 - starttime_rk4
@@ -263,12 +263,11 @@ if __name__ == '__main__':
 
     def plot_system(f, t, t2, x0, h):
         
-        X = solve_ode(f, rk4_step, t, x0, h, system=True)
+        X = solve_ode(f, t, x0, h, system=True,method=rk4_step)
         x = X[:,0]
         xdot = X[:,1]
 
-
-        X2 = solve_ode(f, rk4_step, t2, X[-1], h, system=True)
+        X2 = solve_ode(f, t2, x0, h, system=True,method=rk4_step)
         x2 = X2[:,0]
         xdot2 = X2[:,1]
 
