@@ -14,7 +14,7 @@ from scipy.sparse import csr_matrix
 from parameter_tests import test_inputs
 
 
-def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
+def solve_pde(u_I, L, T, kappa, pj, qj ,boundary, method, mt=1000, mx=30):
     """ 
     Solves PDE for the given boundary condition under the specified method
         Parameters:
@@ -92,6 +92,10 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
 
 
     def boundary_type(boundary):
+        """
+        Defines the matrix dimensions and initial condition dimensions in function of the boundary
+        conditions specified
+        """
         if boundary == 'dirichlet':
             matrix_dim = mx - 1
             u_j = np.zeros(x.size)
@@ -119,6 +123,8 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
 
     # define additive vector
     def additive_vector(boundary):
+        """ 
+        Defines the additive vector size based on the boundary condition being used."""
         if boundary == 'dirichlet':
             return np.zeros(mx-1)
         if boundary == 'neumann':
@@ -126,7 +132,10 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
         
 
     def tri_matrix(method, matrix_dim, boundary):
-
+        """ 
+        In-bedded function which returns the appropriate tri-diagonal matrix in function 
+        of the boudary condition and methid specified.
+        """
         # Set tridiagonal matrix 
         # forward euler
         if method == 'forward':
@@ -138,7 +147,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
                 tridiag = tridiag.toarray()
                 tridiag[-1,0] = lmbda
                 tridiag[0,-1] = lmbda
-                return tridiag, None
+                return csr_matrix(tridiag), None
             elif boundary == 'neumann':
                 tridiag = tridiag.toarray()
                 tridiag[0,1] *= 2
@@ -155,7 +164,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
                 tridiag = tridiag.toarray()
                 tridiag[-1,0] = lmbda
                 tridiag[0,-1] = lmbda
-                return tridiag, None
+                return csr_matrix(tridiag), None
             elif boundary == 'neumann':
                 tridiag = tridiag.toarray()
                 tridiag[0,1] = tridiag[0,1]*2
@@ -175,7 +184,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
                 tridiag[0,-1] = lmbda
                 tridiag2[-1,0] = lmbda
                 tridiag2[0,-1] = lmbda
-                return tridiag, tridiag2
+                return csr_matrix(tridiag), csr_matrix(tridiag2)
             elif boundary == 'neumann':
                 tridiag = tridiag.toarray()
                 tridiag2 = tridiag2.toarray()
@@ -198,7 +207,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
     # setup additive vector
     aV = additive_vector(boundary)
     
-
+    # Solve PDE for each time value
     for i in range(0,mt):
         # forwad euler matrix calc
         if boundary == 'dirichlet':
@@ -245,7 +254,7 @@ def solve_pde(u_I, L, T, mt, mx, kappa, pj, qj ,boundary, method):
             if method == 'crank':
                 u_jp1 = spsolve(diag1, diag2.dot(u_j))
 
-            u_jp1[0] = p(t[i])
+            #u_jp1[0] = p(t[i])
 
     return x, u_j
 
@@ -312,12 +321,12 @@ if __name__ == '__main__':
     # crank-nicholson methods. Using boundary conditions = 0
 
     # Forward Euler
-    x, u_jdf = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'dirichlet', method = 'forward')
+    x, u_jdf = solve_pde(u_I, L, T, kappa, p, q, boundary = 'dirichlet', method = 'forward')
     # Backward Euler
-    x, u_jdb = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'dirichlet', method = 'backward')
+    x, u_jdb = solve_pde(u_I, L, T, kappa, p, q, boundary = 'dirichlet', method = 'backward')
     # Crank-Nicholson
-    x, u_jdc = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'dirichlet', method = 'crank')
-    plt.subplot(1,3,1)
+    x, u_jdc = solve_pde(u_I, L, T, kappa, p, q, boundary = 'dirichlet', method = 'crank')
+    plt.subplot(1,2,1)
     plt.plot(x,u_jdf, '*', label='Forward Euler')
     plt.plot(x, u_jdb,'*', label='Backward Euler')
     plt.plot(x,u_jdc,'*', label='Crank-Nicholson')
@@ -329,46 +338,18 @@ if __name__ == '__main__':
     #plt.show()
 
 
-    # plot PDE using neumann boundary conditions for the forward euler method. 
-    # Using boundary conditions p = 0, q = 1
-
-    # boundary values for neumann
-    def pn(t):
-        return 0
-    def qn(t):
-        return 0.5
-
-    # Forward Euler
-    x, u_jnf = solve_pde(u_I, L, T, mt, mx, kappa, pn, qn, boundary = 'neumann', method = 'forward')
-    # Backward Euler
-    #x, u_jnb = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'neumann', method = 'backward')
-    # Crank-Nicholson
-    #x, u_jnc = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'neumann', method = 'crank')
-
-    plt.subplot(1,3,2)
-    plt.plot(x,u_jnf, '*', label='Forward Euler')
-    #plt.plot(x, u_jnb,'*', label='Backward Euler')
-    #plt.plot(x,u_jnc,'*', label='Crank-Nicholson')
-    plt.plot(xx,u_exact(xx,T),label='Exact solution')
-    plt.xlabel('x')
-    plt.ylabel('u(x,0.5)')
-    plt.title('Plot heat pde using neumann boundary conditions',fontsize=8)
-    plt.legend()
-    #plt.show()  
-
-
     # plot PDE using periodic boundary conditions for the forward euler method. 
 
     #def p(t):
     #    return 0.01
 
     # Forward Euler
-    x, u_jpf = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'periodic', method = 'forward')
+    x, u_jpf = solve_pde(u_I, L, T, kappa, p, q, boundary = 'periodic', method = 'forward')
     # Backward Euler
-    x, u_jpb = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'periodic', method = 'backward')
+    x, u_jpb = solve_pde(u_I, L, T, kappa, p, q, boundary = 'periodic', method = 'backward')
     # Crank-Nicholson
-    x, u_jpc = solve_pde(u_I, L, T, mt, mx, kappa, p, q, boundary = 'periodic', method = 'crank')
-    plt.subplot(1,3,3)
+    x, u_jpc = solve_pde(u_I, L, T, kappa, p, q, boundary = 'periodic', method = 'crank')
+    plt.subplot(1,2,2)
     plt.plot(x,u_jpf, '*', label='Forward Euler')
     plt.plot(x, u_jpb,'*', label='Backward Euler')
     plt.plot(x,u_jpc,'*', label='Crank-Nicholson')
@@ -379,3 +360,40 @@ if __name__ == '__main__':
     plt.legend()
     plt.show()
 
+
+
+
+# plot PDE using neumann boundary conditions for the forward euler method. 
+    # Using boundary conditions p = 0, q = 1
+
+    # boundary values for neumann
+    def pn(t):
+        return 0
+    def qn(t):
+        return 0.5
+
+    # Forward Euler
+    x, u_jnf = solve_pde(u_I, L, T, kappa, pn, qn, boundary = 'neumann', method = 'forward')
+    # Backward Euler
+    x, u_jnb = solve_pde(u_I, L, T, kappa, pn, qn, boundary = 'neumann', method = 'backward')
+    # Crank-Nicholson
+    x, u_jnc = solve_pde(u_I, L, T, kappa, pn, qn, boundary = 'neumann', method = 'crank')
+
+    
+    plt.plot(x,u_jnf, '*', label='Forward Euler')
+    plt.plot(x, u_jnb,'*', label='Backward Euler')
+    plt.plot(x,u_jnc,'*', label='Crank-Nicholson')
+    #plt.plot(xx,u_exact(xx,T),label='Exact solution')
+    plt.xlabel('x')
+    plt.ylabel('u(x,0.5)')
+    plt.title('Plot heat pde using neumann boundary conditions',fontsize=8)
+    plt.legend()
+    plt.show()  
+
+
+
+    # x, u_jpf = solve_pde(u_I, L, T, kappa, p, q, boundary = 'periodic', method = 'forward')
+    # plt.plot(x,u_jpf, '*', label='Forward Euler')
+    # plt.title('Plot heat pde using Periodic boundary conditions',fontsize=8)
+    # plt.legend()
+    # plt.show()
