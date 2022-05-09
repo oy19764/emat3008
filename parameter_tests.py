@@ -33,6 +33,13 @@ def test_inputs(input, input_name, test_name, ):
             raise TypeError(f"{input_name}: {input} is not a valid type. \n" 
                             "Please input a tuple")
 
+
+    def test_int_or_tuple(input, input_name):
+        if not isinstance(input, (tuple, int, float)):
+            raise TypeError(f"{input_name}: {input} is not a valid type. \n" 
+                            "Please input a tuple, integer or float")
+
+
     def test_bool(input, input_name):
         if not isinstance(input, bool):
             raise TypeError(f"{input_name}: {input} is not a valid type. \n" 
@@ -54,10 +61,20 @@ def test_inputs(input, input_name, test_name, ):
     if test_name == 'test_bool':
         test_bool(input, input_name)
 
+    if test_name == 'test_int_or_tuple':
+        test_int_or_tuple(input, input_name)
+
 
 
 
 def test_ode(f, x0, *args):
+    """
+    Test if valid numerical function is being passed
+        Parameters:
+                f:          Function to be checked
+                x0:         initial values passed
+                *args:      any additional arguments f requires
+    """
 
     if callable(f):
         # test f returns valid output
