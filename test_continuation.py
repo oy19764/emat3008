@@ -14,7 +14,7 @@ cmin = 2
 delta_n = 0.001 # step size
 pararmeter_range = (-2,2)
 discretisation = lambda x: x
-sol, alpha = natural_parameters(cubic, pararmeter_range, delta_n, 2, discretisation, solver=fsolve)
+sol, alpha = natural_parameters(cubic, pararmeter_range, delta_n, (2), discretisation, solver=fsolve)
 plt.plot(alpha, sol)
 plt.show()
 
@@ -41,15 +41,15 @@ sol, alpha = natural_parameters(hopf, pararmeter_range, delta_n, U0, discretisat
 #print(sol)
 
 u1 = [sol[0][0]]
-u2 = [sol[0][1]]
+#u2 = [sol[0][1]]
 #T = [sol[0][2]]
 for i in range(1,len(alpha)):
     u1.append(sol[i][0])
-    u2.append(sol[i][1])
+    #u2.append(sol[i][1])
 #    T.append(sol[i][2])
 
 plt.plot(alpha, u1)
-plt.plot(alpha, u2)
+#plt.plot(alpha, u2)
 plt.show()
 
 def true_hopf(t, beta, theta = 0.0):
