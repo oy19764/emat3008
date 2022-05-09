@@ -5,6 +5,7 @@ import math
 from tqdm import tqdm
 from parameter_tests import test_inputs, test_ode
 
+
 def natural_parameters(f, par_range, delta_n, u0, discretisation, solver=fsolve, pc=None):
     """
     Natural Parameters continuation method. Finds the solution to the ode function for
@@ -16,7 +17,11 @@ def natural_parameters(f, par_range, delta_n, u0, discretisation, solver=fsolve,
             u0 (tuple):                 tuple containing estimate for inital values and time period
             discretisation(function):   method
             solver:                     rootfinding method to be used, defaults to fsolve
-            pc(function):               phase condition function to be used if solving system of ODE's           """
+            pc(function):               phase condition function to be used if solving system of ODE's           
+        Output:
+            sol(array):                 solution to the function (initial conditions, time period) for each parameter
+            alpha(array):               associated parameter value to the solution
+    """
     
 
     # test parameters:
@@ -24,7 +29,7 @@ def natural_parameters(f, par_range, delta_n, u0, discretisation, solver=fsolve,
     test_inputs(par_range, 'par_range', 'test_tuple')
     # test delta_n is float
     test_inputs(delta_n, 'delta_n', 'test_int_or_float')
-    # test u0 is a tuple
+    # test u0 is an integer or tuple
     test_inputs(u0, 'u0', 'test_int_or_tuple')
     # test discretisation is a function
     test_inputs(discretisation, 'discretisation', 'test_function')
@@ -42,22 +47,30 @@ def natural_parameters(f, par_range, delta_n, u0, discretisation, solver=fsolve,
 
         if pc == None:
             return solver(discretisation(f), u0, args=alpha)
+
         else:
             return solver(discretisation(f), u0, args=(pc, alpha))
 
 
-    sol = []  
-    sol.append(get_sol(f, param_list[0], discretisation, u0, pc))
-
+    # get dimensions of solution vector, and generate solution array
+    if pc == None:
+        sol = np.zeros(len(param_list))
+    else:
+        n = len(u0)
+        sol = np.zeros([len(param_list), n])
+    
+    # get first estimate
+    sol[0] = get_sol(f, param_list[0], discretisation, u0, pc)
+    print(sol[0])
     for a in tqdm(range(1, len(param_list))):
-        sol.append(get_sol(f, param_list[a], discretisation, np.round(tuple(sol[-1]), 3), pc))
+        sol[a]= get_sol(f, param_list[a], discretisation, np.round(sol[a-1], 3), pc)
           
     return sol, param_list
 
 
 
 
-
+# unsuccessful attempt at pseudo arclength continuation
 def pseudo_arclength(f, par_range, delta_n, u0, discretisation, solver=fsolve, pc=None):
 
 
@@ -184,55 +197,26 @@ if __name__ == '__main__':
 
 
     delta_n = 0.01 # step size
-    pararmeter_range = (2,-1)
+    pararmeter_range = (2,-1)   # changed parameter range to avoid code crashing
     discretisation = shoot
     def pc(u0, *args):
         return hopf(u0, 0, *args)[0]
 
     U0 = (1.2,1.2,6.4)
     sol, alpha = natural_parameters(hopf, pararmeter_range, delta_n, U0, discretisation, fsolve, pc)
-    #print(sol)
 
-    u1 = [sol[0][0]]
-    #u2 = [sol[0][1]]
-    #T = [sol[0][2]]
-    for i in range(1,len(alpha)):
-        u1.append(sol[i][0])
-        #u2.append(sol[i][1])
-    #    T.append(sol[i][2])
+    
+    u1 = sol[:,0]
     plt.subplot(1,2,2)
     plt.plot(alpha, u1)
-    #plt.plot(alpha, u2)
     plt.title('Natural Parameter continuation for hopf equation')
     plt.xlabel('parameter value')
     plt.ylabel('solution')
     plt.show()
 
-    def true_hopf(t, beta, theta = 0.0):
-
-        u1 = np.sqrt(beta) * np.cos(t + theta)
-        u2 = np.sqrt(beta) * np.sin(t + theta)
-
-        return np.array([u1, u2])
 
 
-    #true_roots = []
-    #for a, t in list(zip(alpha, T)):
-    #    
-    #    true_roots.append(true_hopf(0, a, theta = t))#
-
-    #print(true_roots)
-    #root_u1 = []
-    #root_u2 = []
-    #for i in range(0,len(alpha)):
-    #    root_u1.append(true_roots[i][0])
-    #    root_u2.append(true_roots[i][1])
-
-    #plt.plot(alpha, root_u1)
-    #plt.plot(alpha, root_u2)
-    #plt.show()
-
-
+    # plot modified hopf
     def hopf_mod(u, t, beta):
 
         u1, u2 = u
@@ -243,5 +227,19 @@ if __name__ == '__main__':
         return np.array((du1dt, du2dt))
 
 
-    #print(pseudo_arclength(hopf, cmax, cmin, delta_n, (1.4,0,6), ODE = True))
+    delta_n = 0.01 # step size
+    pararmeter_range = (2,-0.5) # changed parameter range to avoid code crashing
+    discretisation = shoot
+    def pc(u0, *args):
+        return hopf_mod(u0, 0, *args)[0]
 
+    U0 = (1.2,1.2,6.4)
+    sol, alpha = natural_parameters(hopf_mod, pararmeter_range, delta_n, U0, discretisation, fsolve, pc)
+
+    
+    u1 = sol[:,0]
+    plt.plot(alpha, u1)
+    plt.title('Natural Parameter continuation for modified hopf equation')
+    plt.xlabel('parameter value')
+    plt.ylabel('solution')
+    plt.show()
