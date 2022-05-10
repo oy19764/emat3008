@@ -239,18 +239,8 @@ if __name__ == '__main__':
     t = np.linspace(0,250,251)
     t2 = np.linspace(250,500,251)
 
-    """
-    x'' = -x
-    equivalent to:
-    x' = a
-    a' = -x
-    treating as a vector:
-    (x, a)' = (a, -x)
-    make function that can compute the rhs of the vector:
-    X' = f(X, t)
-    """
 
-    # d2x/dt2 = -x #
+    # d2x/dt2 = -x 
     def f(t, X):
         x = X[0]
         a = X[1]
