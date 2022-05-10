@@ -58,7 +58,7 @@ def true_hopf_3d(t):
 
     u1 = np.sqrt(beta) * np.cos(t + theta)
     u2 = np.sqrt(beta) * np.sin(t + theta)
-    u3 = np.exp(-t + beta)
+    u3 = np.exp(-t)
 
     return np.array((u1, u2, u3))
 
@@ -110,11 +110,13 @@ def test_limit_cycle(test_f, true_f, U0, pc, tolerance, endpoints,*args):
 
 
 def test_period(test_f, U0, pc, true_T, tolerance,*args):
+    """
+    Function testing the limit cycle returns an accurate time period for the limit cycle"""
     # find limit cycle conditions of given function to test
     soll = shooting.limit_cycle(test_f, U0, pc, *args)
     # unpack solution
     T = soll[-1]
-    return np.isclose(T, true_T)
+    return np.isclose(T, true_T, tolerance)
 
     
 
@@ -128,7 +130,7 @@ if __name__ == '__main__':
 
     print('\n')
     
-    tolerance = np.logspace(-1,-20,20)  # tolerance range to test for
+    tolerance = np.logspace(-1,-21,21)  # tolerance range to test for
     
     # initial condition estimates
     U0_2d = (-1,0,6) 
@@ -152,8 +154,7 @@ if __name__ == '__main__':
             break
         elif i == len(tolerance):
             print(f"Limit cycle is found to be accurate at a tolerance level of {tolerance[-1]} or greater, for a 3 dimensional ODE\n")
-        else:
-            print('Limit cycle endpoints did not match endpoints, hence no limit cycle found')
+        
 
 
 
@@ -176,6 +177,8 @@ if __name__ == '__main__':
             break
         elif i == len(tolerance):
             print(f"Limit cycle initial conditions found to match endpoints accurate at a tolerance level of {tolerance[-1]} or greater, for a 3 dimensional ODE\n")
+        else:
+            print('Limit cycle endpoints did not match endpoints, hence no limit cycle found')    
 
 
     # test correct Time period for the limit cycle is found

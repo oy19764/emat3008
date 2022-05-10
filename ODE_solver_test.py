@@ -7,6 +7,7 @@ import numpy as np
 def ode(t, x):
     return x
 
+
 def true_ode(t):
     return np.exp(t)
 
@@ -17,6 +18,7 @@ def ode_system(t, X):
     dxdt = beta*x - y - x*(x**2 + y**2)
     dydt = x + beta*y - y*(x**2 + y**2)
     return np.array((dxdt,dydt))
+
 
 def true_ode_system(t):
     beta=1
