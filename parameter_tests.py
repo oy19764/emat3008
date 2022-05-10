@@ -15,19 +15,19 @@ def test_inputs(input, input_name, test_name, ):
             raise TypeError(f"{input_name}: {input} is not a valid type. \n" 
                             "Please input an integer or a float")
     
-
+    # test parameter is a function
     def test_function(input, input_name):
         if not callable(input):
             raise TypeError(f"{input_name} is not a valid input. \n" 
                             "Please input a function")
     
-    
+    # test parameter is a list or array
     def test_array(input, input_name):
         if not isinstance(input, (np.ndarray, list)):
             raise TypeError(f"{input_name} is not a valid type. \n" 
                             "Please input a numpy array")
 
-
+    # test parameter is a tuple
     def test_tuple(input, input_name):
         if not isinstance(input, tuple):
             raise TypeError(f"{input_name}: {input} is not a valid type. \n" 
@@ -39,7 +39,7 @@ def test_inputs(input, input_name, test_name, ):
             raise TypeError(f"{input_name}: {input} is not a valid type. \n" 
                             "Please input a tuple, integer or float")
 
-
+    # test parameter is a boolean
     def test_bool(input, input_name):
         if not isinstance(input, bool):
             raise TypeError(f"{input_name}: {input} is not a valid type. \n" 

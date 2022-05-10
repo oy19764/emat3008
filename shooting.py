@@ -176,8 +176,6 @@ if __name__ == '__main__':
         #orbit_limit = [period_list[-2], period_list[-1]]
         orbit_limit = np.array([period_list[-2], period_list[-1]])
         period = period_list[-1] - period_list[-2]
-        print(orbit_limit)
-        print(period_list)
 
         start = intersect[-2]
     

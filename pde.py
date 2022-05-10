@@ -1,10 +1,3 @@
-# simple forward Euler solver for the 1D heat equation
-#   u_t = kappa u_xx  0<x<L, 0<t<T
-# with zero-temperature boundary conditions
-#   u=0 at x=0,L, t>0
-# and prescribed initial temperature
-#   u=u_I(x) 0<=x<=L,t=0
-
 import numpy as np
 import matplotlib.pyplot as plt
 from math import pi
